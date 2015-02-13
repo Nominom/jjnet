@@ -17,18 +17,23 @@ import java.text.ParseException;
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
+
+import ove.crypto.digest.Blake2b;
 
 public class SecurityService {
 	
-	private static MessageDigest md5;
+//	private static MessageDigest hasher;
+	private static Blake2b.Digest hasher;
 	private static KeyFactory rsaFact;
 	private static Cipher cipher;
 	private static KeyPairGenerator rsaKpg;
 
 	static{
 		try {
-			md5 = MessageDigest.getInstance("MD5");
+//			hasher = MessageDigest.getInstance("BLAKE2");
+			hasher = Blake2b.Digest.newInstance();
 			rsaFact = KeyFactory.getInstance("RSA");
 			cipher = Cipher.getInstance("RSA");
 			rsaKpg = KeyPairGenerator.getInstance("RSA");
@@ -94,21 +99,22 @@ public class SecurityService {
 	}
 	
 	
-	public static String MD5HashtoHex(String data){
-		md5.update(data.getBytes());
-		byte[] hash = md5.digest();
+	public static String HashtoHex(String data){
+		hasher.update(data.getBytes());
+		byte[] hash = hasher.digest();
 		StringBuilder sb = new StringBuilder(hash.length * 2);
 		   for(byte b: hash)
 		      sb.append(String.format("%02x", b & 0xff));
 		return sb.toString();
 	}
 	
-	public static String MD5HashtoHex(String data, int length){
-		md5.update(data.getBytes());
-		byte[] hash = md5.digest();
+	public static String HashtoHex(String data, int length){
+		hasher.update(data.getBytes());
+		byte[] hash = hasher.digest();
 		StringBuilder sb = new StringBuilder();
 		for(byte b: hash)
 			sb.append(String.format("%02x", b & 0xff));
+		/* TODO fix indexOutOfBoundsException */
 		return sb.toString().substring(0, length);
 	}
 	

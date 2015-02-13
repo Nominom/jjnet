@@ -25,6 +25,7 @@ public class Tester {
 	public static void main(String[] args){
 		
 		NetworkManager nm = new NetworkManager();
+		nm.init();
 		
 		try {
 			
@@ -33,10 +34,10 @@ public class Tester {
 			PrivateKey priv = kp.getPrivate();
 			
 			System.out.println(" public= " + SecurityService.publicKeytoString(pub)
-					+"\n   hash= " + SecurityService.MD5HashtoHex(SecurityService.publicKeytoString(pub))
+					+"\n   hash= " + SecurityService.HashtoHex(SecurityService.publicKeytoString(pub))
 					+"\n  again= " + SecurityService.publicKeytoString(SecurityService.parsePublicKey(SecurityService.publicKeytoString(pub))));
 			System.out.println("private= " + SecurityService.privateKeytoString(priv)
-					 +"\n   hash= " + SecurityService.MD5HashtoHex(SecurityService.privateKeytoString(priv))
+					 +"\n   hash= " + SecurityService.HashtoHex(SecurityService.privateKeytoString(priv))
 					 +"\n  again= " + SecurityService.privateKeytoString(SecurityService.parsePrivateKey(SecurityService.privateKeytoString(priv))));
 			
 			String message = "Hashu";

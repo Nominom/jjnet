@@ -36,7 +36,7 @@ public class NetworkManager {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 		
-		localEndPointAddress=SecurityService.MD5HashtoHex(
+		localEndPointAddress=SecurityService.HashtoHex(
 				SecurityService.publicKeytoString(publicKey),
 				EndPoint.ENDPOINT_ADDRESS_LENGTH);
 		

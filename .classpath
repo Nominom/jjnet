@@ -17,7 +17,7 @@
 			<attribute name="maven.pomderived" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="lib/jNAT-PMPlib.jar">
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/jNAT-PMPlib.jar"/>
+	<classpathentry kind="lib" path="lib/ove.blake2b-alpha.0.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

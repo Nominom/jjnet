@@ -1,0 +1,4 @@
+/bin/
+/target
+*.mv.db
+*.trace.db

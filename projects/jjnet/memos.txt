@@ -1,0 +1,45 @@
+STUN 
+http://www.h-online.com/security/features/How-Skype-Co-get-round-firewalls-747314.html
+https://books.google.co.uk/books?id=_PdIV2MMwQAC&pg=PA99&lpg=PA99&dq=JXTA+get+direct+UDP+connection&source=bl&ots=1qHoS5t5VX&sig=Bm2Yut06NImOiIqp136MctNFyyM&hl=fi&sa=X&ei=J8bUVOjcGuXD7gajoIEw&ved=0CCcQ6AEwAQ#v=onepage&q=JXTA%20get%20direct%20UDP%20connection&f=false
+http://stackoverflow.com/questions/21501359/p2p-message-transfer-behind-firewalls-and-nat
+http://en.wikipedia.org/wiki/UDP_hole_punching
+http://jstun.javawi.de/
+
+http://stackoverflow.com/questions/5059224/which-is-the-best-library-for-xml-parsing-in-java
+
+
+Maybe a distributed database type user database
+- Every peer knows some of the other peers (ones they have had to interact with in the past)
+- Works with advertisements
+- Newer advertisements rewrite older ones with timestamps
+- Modifications that don't come directly from the user have to be verified by multiple peers
+- Asymmetric key verification
+- Database cleanup
+
+
+http://en.wikipedia.org/wiki/Distributed_database
+
+RSA-Encryption
+
+
+
+Application layer
+	- Developer decides
+
+Peer group layer
+	- supports queries, relayed pipes and multicasting? Private groups can be configured to allow direct connections.
+		- Limit on how many queries/multicasts a peer can send and forward per second
+	- private/public keys to ensure authenticity
+	- Traffic mostly encrypted
+	- Hard/"Impossible" to pinpoint origin IP
+	- IP =/= Peer
+
+Network layer
+	- Works with advertisements
+		- Advertisements relay information like available STUN servers or potential neighbors
+		- Advertisements are saved locally and published
+		- Nodes can query neighbor nodes for advertisements, but these queries are not forwarded to neighbors' neighbor's.
+	- Forwards messages to neighbors using some algorithm (undecided)
+		- Exponential Decay Bloom Filter
+		- Hash table
+	

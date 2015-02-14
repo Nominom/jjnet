@@ -34,17 +34,17 @@ public class Tester {
 			PrivateKey priv = kp.getPrivate();
 			
 			System.out.println(" public= " + SecurityService.publicKeytoString(pub)
-					+"\n   hash= " + SecurityService.HashtoHex(SecurityService.publicKeytoString(pub))
+					+"\n   hash= " + SecurityService.hashAsHex(SecurityService.publicKeytoString(pub))
 					+"\n  again= " + SecurityService.publicKeytoString(SecurityService.parsePublicKey(SecurityService.publicKeytoString(pub))));
 			System.out.println("private= " + SecurityService.privateKeytoString(priv)
-					 +"\n   hash= " + SecurityService.HashtoHex(SecurityService.privateKeytoString(priv))
+					 +"\n   hash= " + SecurityService.hashAsHex(SecurityService.privateKeytoString(priv))
 					 +"\n  again= " + SecurityService.privateKeytoString(SecurityService.parsePrivateKey(SecurityService.privateKeytoString(priv))));
 			
 			String message = "Hashu";
 			System.out.println(message);
-			byte[] encrypted = SecurityService.rsaEncrypt(message.getBytes(), pub);
+			String encrypted = SecurityService.rsaEncrypt(message, pub);
 			System.out.println(new String(encrypted));
-			byte[] decrypted = SecurityService.rsaDecrypt(encrypted, priv);
+			String decrypted = SecurityService.rsaDecrypt(encrypted, priv);
 			System.out.println(new String(decrypted));
 			
 		} catch (InvalidKeySpecException e) {

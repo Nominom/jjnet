@@ -20,11 +20,17 @@ import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.Mac;
 import javax.crypto.NoSuchPaddingException;
 
+import org.apache.commons.codec.DecoderException;
+import org.apache.commons.codec.binary.Hex;
+
 import ove.crypto.digest.Blake2b;
 
 public class SecurityService {
 	
 //	private static MessageDigest hasher;
+	public static final int HASH_MAX_LENGTH=64;
+	public static int BLOCK_SIZE=128;
+	public static int CIPHER_LENGTH=128;
 	private static Blake2b.Digest hasher;
 	private static KeyFactory rsaFact;
 	private static Cipher cipher;
@@ -33,20 +39,28 @@ public class SecurityService {
 	static{
 		try {
 //			hasher = MessageDigest.getInstance("BLAKE2");
-			hasher = Blake2b.Digest.newInstance();
+			hasher = Blake2b.Digest.newInstance(HASH_MAX_LENGTH);
 			rsaFact = KeyFactory.getInstance("RSA");
 			cipher = Cipher.getInstance("RSA");
 			rsaKpg = KeyPairGenerator.getInstance("RSA");
+			rsaKpg.initialize(Integer.parseInt(System.getProperty("jjneko.jjnet.security.rsakeylength", "1024")));
+			KeyPair kp = rsaKpg.genKeyPair();
+			CIPHER_LENGTH=rsaEncrypt("",kp.getPrivate()).length();
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			System.exit(0);
 		} catch (NoSuchPaddingException e) {
 			e.printStackTrace();
+		} catch (InvalidKeyException e) {
+			e.printStackTrace();
+		} catch (IllegalBlockSizeException e) {
+			e.printStackTrace();
+		} catch (BadPaddingException e) {
+			e.printStackTrace();
 		}
 	}
 	
 	public static KeyPair generateRSAKeyPair(){
-		rsaKpg.initialize(Integer.parseInt(System.getProperty("jjneko.jjnet.security.rsakeylength", "1024")));
 		KeyPair kp = rsaKpg.genKeyPair();
 		return kp;
 	}
@@ -99,7 +113,7 @@ public class SecurityService {
 	}
 	
 	
-	public static String HashtoHex(String data){
+	public static String hashAsHex(String data){
 		hasher.update(data.getBytes());
 		byte[] hash = hasher.digest();
 		StringBuilder sb = new StringBuilder(hash.length * 2);
@@ -108,37 +122,38 @@ public class SecurityService {
 		return sb.toString();
 	}
 	
-	public static String HashtoHex(String data, int length){
+	public static String hashAsHex(String data, int length){
 		hasher.update(data.getBytes());
 		byte[] hash = hasher.digest();
 		StringBuilder sb = new StringBuilder();
 		for(byte b: hash)
 			sb.append(String.format("%02x", b & 0xff));
-		/* TODO fix indexOutOfBoundsException */
+		if(length>HASH_MAX_LENGTH)
+			return sb.toString();
 		return sb.toString().substring(0, length);
 	}
 	
-	public static byte[] rsaEncrypt(byte[] data, PrivateKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException{
+	public static String rsaEncrypt(String data, PrivateKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException{
 		  cipher.init(Cipher.ENCRYPT_MODE, key);
-		  byte[] cipherData = cipher.doFinal(data);
-		  return cipherData;
+		  byte[] cipherData = cipher.doFinal(data.getBytes());
+		  return Hex.encodeHexString(cipherData);
 	}
 	
-	public static byte[] rsaDecrypt(byte[] data, PrivateKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException{
+	public static String rsaDecrypt(String data, PrivateKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, DecoderException{
 		  cipher.init(Cipher.DECRYPT_MODE, key);
-		  byte[] cipherData = cipher.doFinal(data);
-		  return cipherData;
+		  byte[] cipherData = cipher.doFinal(Hex.decodeHex(data.toCharArray()));
+		  return new String(cipherData);
 	}
 	
-	public static byte[] rsaEncrypt(byte[] data, PublicKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException{
+	public static String rsaEncrypt(String data, PublicKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException{
 		  cipher.init(Cipher.ENCRYPT_MODE, key);
-		  byte[] cipherData = cipher.doFinal(data);
-		  return cipherData;
+		  byte[] cipherData = cipher.doFinal(data.getBytes());
+		  return Hex.encodeHexString(cipherData);
 	}
 	
-	public static byte[] rsaDecrypt(byte[] data, PublicKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException{
+	public static String rsaDecrypt(String data, PublicKey key) throws IllegalBlockSizeException, InvalidKeyException, BadPaddingException, DecoderException{
 		  cipher.init(Cipher.DECRYPT_MODE, key);
-		  byte[] cipherData = cipher.doFinal(data);
-		  return cipherData;
+		  byte[] cipherData = cipher.doFinal(Hex.decodeHex(data.toCharArray()));
+		  return new String(cipherData);
 	}
 }

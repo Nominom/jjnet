@@ -22,12 +22,24 @@ public class NetworkManager {
 	public static PublicKey publicKey=null;
 	public static String localEndPointAddress="";
 	private static DatabaseManager database = null;
+	/* TODO Don't know if i want to keep this*/
 	private static ArrayList<EndPoint> peers = new ArrayList<EndPoint>();
 	public static long TIMESTAMP_VALID=10000;
 	private static int minNeighbours=1;
 	private static int maxNeighbours=5;
 	public static NATType natType = NATType.UNSPECIFIED;
 	public static int natDelta = 0;
+	static String seedAddress;
+	static int seedPort;
+	static ConnectionType seedType;
+	static boolean useHttp = true, useUdp = true, useUPnP = true, useNATPnP = true;
+	
+	public static void init(String seedAddress, int seedPort, ConnectionType seedType){
+		NetworkManager.seedAddress=seedAddress;
+		NetworkManager.seedPort=seedPort;
+		NetworkManager.seedType=seedType;
+		init();
+	}
 	
 	public static void init(){
 		database = new DatabaseManager();
@@ -36,13 +48,39 @@ public class NetworkManager {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 		
-		localEndPointAddress=SecurityService.HashtoHex(
+		localEndPointAddress=SecurityService.hashAsHex(
 				SecurityService.publicKeytoString(publicKey),
 				EndPoint.ENDPOINT_ADDRESS_LENGTH);
 		
 		log.info("localEndpoint= " + localEndPointAddress);
 		log.info("NetworkManager initialized!");
 	}
+	
+	public static void start(){
+		
+	}
+	
+	public static void stop(){
+		
+	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	public static EndPoint newPeerProtocol(String endpoint, String publicKey, long timestamp, String hashedStamp ){
 		try{

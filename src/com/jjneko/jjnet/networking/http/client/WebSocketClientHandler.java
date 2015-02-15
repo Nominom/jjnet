@@ -37,6 +37,8 @@
 
 package com.jjneko.jjnet.networking.http.client;
 
+import com.jjneko.jjnet.networking.pipes.Pipe;
+
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,9 +56,11 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
 
     private final WebSocketClientHandshaker handshaker;
     private ChannelPromise handshakeFuture;
+    private Pipe pipe;
 
-    public WebSocketClientHandler(WebSocketClientHandshaker handshaker) {
+    public WebSocketClientHandler(WebSocketClientHandshaker handshaker, Pipe pipe) {
         this.handshaker = handshaker;
+        this.pipe=pipe;
     }
 
     public ChannelFuture handshakeFuture() {
@@ -99,6 +103,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         if (frame instanceof TextWebSocketFrame) {
             TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
             System.out.println("WebSocket Client received message: " + textFrame.text());
+            pipe.queuePacket(textFrame.text());
         } else if (frame instanceof PongWebSocketFrame) {
             System.out.println("WebSocket Client received pong");
         } else if (frame instanceof CloseWebSocketFrame) {

@@ -3,12 +3,14 @@ package jjnet;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
+import com.jjneko.jjnet.networking.JJnet;
 import com.jjneko.jjnet.networking.pipes.http.SimpleHttpClientPipe;
 
 public class Tester2 {
 	
 	public static void main(String[] args){
 		try {
+			JJnet.init();
 			InetAddress iadd = InetAddress.getLocalHost();
 			int port = 7555;
 			

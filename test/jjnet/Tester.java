@@ -13,7 +13,7 @@ import java.util.UUID;
 
 import org.xml.sax.SAXException;
 
-import com.jjneko.jjnet.networking.NetworkManager;
+import com.jjneko.jjnet.networking.JJnet;
 import com.jjneko.jjnet.networking.http.HttpService;
 import com.jjneko.jjnet.networking.security.SecurityService;
 import com.jjneko.jjnet.networking.stun.StunServer;
@@ -24,20 +24,19 @@ public class Tester {
 	
 	public static void main(String[] args){
 		
-		NetworkManager nm = new NetworkManager();
+		JJnet nm = new JJnet();
 		nm.init();
 		
 		try {
-			
 			KeyPair kp = SecurityService.generateRSAKeyPair();
 			PublicKey pub = kp.getPublic();
 			PrivateKey priv = kp.getPrivate();
 			
 			System.out.println(" public= " + SecurityService.publicKeytoString(pub)
-					+"\n   hash= " + SecurityService.hashAsHex(SecurityService.publicKeytoString(pub))
+					+"\n   hash= " + SecurityService.hash(SecurityService.publicKeytoString(pub))
 					+"\n  again= " + SecurityService.publicKeytoString(SecurityService.parsePublicKey(SecurityService.publicKeytoString(pub))));
 			System.out.println("private= " + SecurityService.privateKeytoString(priv)
-					 +"\n   hash= " + SecurityService.hashAsHex(SecurityService.privateKeytoString(priv))
+					 +"\n   hash= " + SecurityService.hash(SecurityService.privateKeytoString(priv))
 					 +"\n  again= " + SecurityService.privateKeytoString(SecurityService.parsePrivateKey(SecurityService.privateKeytoString(priv))));
 			
 			String message = "Hashu";
@@ -81,24 +80,24 @@ public class Tester {
 		}
 		
 		try{
-			upnp.start();
-			int extHttpPort = upnp.mapPort(https.getServerPort(), "TCP", "http server");
-			int extSTUNPort = upnp.mapPort(StunServer.stunServerPort, "UDP", "STUN server");
-			System.out.println("External HTTP port: "+ extHttpPort);
-			System.out.println("External STUN port: "+ extSTUNPort);
-			
-			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-			    public void run() {
-			    	try {
-						upnp.clearPortMappings();
-					} catch (IOException e) {
-						
-					} catch (SAXException e) {
-						
-					}
-			    }
-			}));
-			
+//			upnp.start();
+//			int extHttpPort = upnp.mapPort(https.getServerPort(), "TCP", "http server");
+//			int extSTUNPort = upnp.mapPort(StunServer.stunServerPort, "UDP", "STUN server");
+//			System.out.println("External HTTP port: "+ extHttpPort);
+//			System.out.println("External STUN port: "+ extSTUNPort);
+//			
+//			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+//			    public void run() {
+//			    	try {
+//						upnp.clearPortMappings();
+//					} catch (IOException e) {
+//						
+//					} catch (SAXException e) {
+//						
+//					}
+//			    }
+//			}));
+//			
 		} catch(Exception e){
 			System.out.println("Could not start UPnP: "+ e.getMessage());
 		}

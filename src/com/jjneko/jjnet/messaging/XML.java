@@ -36,7 +36,7 @@ public class XML {
 		xstream.marshal(object,  cw);
 		String xml = sw.toString();
 		xml=xml.replace("\n", "");
-		String hash = SecurityService.hashAsHex(xml,64);
+		String hash = SecurityService.hash(xml);
 		String shash = "";
 		try{
 			String signedHash = SecurityService.rsaEncrypt(hash, key);
@@ -63,7 +63,7 @@ public class XML {
 		try{
 			String encrypteHash = signedxml.substring(0, SecurityService.CIPHER_LENGTH);
 			String xml = signedxml.substring(SecurityService.CIPHER_LENGTH);
-			String hash = SecurityService.hashAsHex(xml,64);
+			String hash = SecurityService.hash(xml);
 			String decryptedHash = SecurityService.rsaDecrypt(encrypteHash, key);			
 			return decryptedHash.equals(hash);
 		}catch(Exception ex){

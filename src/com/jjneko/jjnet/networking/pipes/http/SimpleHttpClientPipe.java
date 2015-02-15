@@ -25,10 +25,12 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.LinkedList;
 
 import com.jjneko.jjnet.networking.EndPoint;
+import com.jjneko.jjnet.networking.JJnet;
 import com.jjneko.jjnet.networking.http.client.WebSocketClientHandler;
 import com.jjneko.jjnet.networking.http.server.WebSocketHttpServerHandler;
 import com.jjneko.jjnet.networking.pipes.Pipe;
@@ -44,16 +46,16 @@ public class SimpleHttpClientPipe extends Pipe{
 	public SimpleHttpClientPipe(EndPoint endpoint, final InetAddress address, final int serverPort) {
 		super(endpoint, null);
 		handshake = new SimpleHttpClientPipeInitializer(this, address, serverPort);
-		
 		sendKeepAlive=false;
 	}
 
 	@Override
 	public void send(String message) {
-//		if(!channel.channel().isActive()){
-//			//TODO Disconnect pipe
-//		}
-//
+		if(!ch.isActive()){
+			close();
+			return;
+		}
+		
 //		channel.channel().writeAndFlush(message);
 		
 		WebSocketFrame frame = new TextWebSocketFrame(message);
@@ -74,21 +76,24 @@ public class SimpleHttpClientPipe extends Pipe{
 	}
 	
 	public void queuePacket(String packet){
+		System.out.println(getIPAddress());
 		queue.add(packet);
 	}
 
 	@Override
 	public void sendKeepAlive() {
-		// TODO Auto-generated method stub
 		
 	}
 
 	@Override
 	public void close() {
-//		channel.close();
-//		WebSocketHttpServerHandler.pipes.remove(channel.channel().id().asShortText());
 		group.shutdownGracefully();
+		ch.close();
+		JJnet.removePipe(this);
 	}
 
-
+	@Override
+	public String getIPAddress() {
+		return ((InetSocketAddress)ch.remoteAddress()).getAddress().getHostAddress();
+	}
 }

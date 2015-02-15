@@ -1,6 +1,11 @@
 jjneko.jjnet.http.server.WorkerCount // Specifies how many worker threads the webSocket server should have // default 1
 jjneko.jjnet.http.useSSL // Specifies if webSocket server should use SSL // default false
 jjneko.jjnet.http.server.logLevel // Specifies WebSocket server log level // TRACE INFO DEBUG WARN ERROR // default ERROR
-jjneko.jjnet.upnp.useupnp // Specifies whether UPnP should be used // default true
 jjneko.jjnet.upnp.upnpretries // Specifies how many times UPnPService tries to map to different ports // default 10
 jjneko.jjnet.security.rsakeylength // Specifies the RSA key length // default 1024
+
+jjneko.jjnet.upnp.useupnp // Specifies whether UPnP should be used to open ports // default true
+jjneko.jjnet.natpmp.use // Specifies whether natpmp should be used to open ports // default true
+jjneko.jjnet.http.usehttp // Specifies whether Http server should be started // default true
+jjneko.jjnet.udp.useudp // Specifies whether UDP listening server should be started // default true
+jjneko.jjnet.stun.usestun // Specifies whether STUN listening server should be started // default true

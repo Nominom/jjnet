@@ -1,5 +1,10 @@
 package com.jjneko.jjnet.networking;
 
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
+
+import org.apache.commons.lang3.EnumUtils;
+
 
 /**
  * Your relevant enum comments
@@ -51,8 +56,8 @@ public enum Protocol {
 	 */
 	ARP((byte)6),
 	/**
-	 * PEERGROUP MULTICAST PROTOCOL
-	 * Used for multicasting messages to all peers in a group
+	 * PEER MULTICAST PROTOCOL<br/>
+	 * Used for multicasting messages to all peers in worldgroup
 	 * 0b0000 0111
 	 */
 	PMP((byte)7);
@@ -64,6 +69,31 @@ public enum Protocol {
 	
 	public byte value(){
 		return value;
+	}
+	
+	public char toChar(){
+		try {
+			return new String(new byte[]{value}, "ISO-8859-1").charAt(0);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			System.exit(1);
+			return '0';
+		}
+	}
+	
+	public static Protocol fromChar(char ch){
+		try {
+			byte b = new String(new char[]{ch}).getBytes("ISO-8859-1")[0];
+			for(Protocol p : Protocol.values()){
+				if(b==p.value())
+				return p;
+			}
+			return null;
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 };

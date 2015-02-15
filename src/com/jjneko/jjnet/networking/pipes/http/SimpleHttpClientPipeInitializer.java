@@ -17,9 +17,14 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import java.net.InetAddress;
 import java.net.URI;
 
+import com.jjneko.jjnet.messaging.XML;
+import com.jjneko.jjnet.networking.JJnet;
+import com.jjneko.jjnet.networking.Protocol;
 import com.jjneko.jjnet.networking.http.client.WebSocketClientHandler;
 
 public class SimpleHttpClientPipeInitializer implements Runnable{
+	
+	private static final long HANDSHAKE_TIMEOUT=5000;
 
 	InetAddress address;
 	int serverPort;
@@ -74,7 +79,7 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
             final WebSocketClientHandler handler =
                     new WebSocketClientHandler(
                             WebSocketClientHandshakerFactory.newHandshaker(
-                                    uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()));
+                                    uri, WebSocketVersion.V13, null, false, new DefaultHttpHeaders()),pipe);
 
             pipe.clientBootstrap = new Bootstrap();
             pipe.clientBootstrap.group(pipe.group)
@@ -93,18 +98,30 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
                  }
              });
 
+            /* TODO better handshake '-' */
             pipe.ch = pipe.clientBootstrap.connect(uri.getHost(), port).sync().channel();
             handler.handshakeFuture().sync();
+            pipe.send(Protocol.PRP.toChar()+"ping");
+            long waitTime=0;
+            while(pipe.isEmpty()){
+            	try{
+            		Thread.sleep(100);
+            		waitTime+=100;
+            		if(waitTime>HANDSHAKE_TIMEOUT){
+            			pipe.setConnected(false);
+            			pipe.close();
+            			System.out.println("No response received in time");
+            			return;
+            		}
+            	}catch(Exception ex){}
+            }
+            if(pipe.receiveHandshake().equals("pong"))
+            	pipe.setConnected(true);
+            else
+            	pipe.close();
             
-            
-            
-            /*
-             * TODO Handshake here
-             */
-			pipe.send("2meow");
-
-            
-            
+            System.out.println("connected: "+ pipe.isConnected());
+    		JJnet.addPipe(pipe);
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}

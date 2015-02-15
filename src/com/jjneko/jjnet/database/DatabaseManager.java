@@ -17,7 +17,8 @@ import org.h2.jdbcx.JdbcDataSource;
 
 public class DatabaseManager {
 	
-	public String databaseName = "jjnetdb";
+	/* TODO remove the random!!!*/
+	public String databaseName = "jjnetdb"+(int)(Math.random()*100.0);
 	public Connection conn;
 	
 	public DatabaseManager(){

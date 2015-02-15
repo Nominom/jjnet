@@ -3,17 +3,17 @@ package com.jjneko.jjnet.networking;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 import com.jjneko.jjnet.database.DatabaseManager;
+import com.jjneko.jjnet.networking.pipes.Pipe;
 import com.jjneko.jjnet.networking.security.SecurityService;
 
-public class NetworkManager {
+public class JJnet {
 	
-	private static Logger log = Logger.getLogger(NetworkManager.class.getName());
+	private static Logger log = Logger.getLogger(JJnet.class.getName());
 	
 	/**
 	 * Never send your private key to anyone!
@@ -33,11 +33,12 @@ public class NetworkManager {
 	static int seedPort;
 	static ConnectionType seedType;
 	static boolean useHttp = true, useUdp = true, useUPnP = true, useNATPnP = true;
+	static ConcurrentLinkedQueue<Pipe> pipes = new ConcurrentLinkedQueue<Pipe>();
 	
 	public static void init(String seedAddress, int seedPort, ConnectionType seedType){
-		NetworkManager.seedAddress=seedAddress;
-		NetworkManager.seedPort=seedPort;
-		NetworkManager.seedType=seedType;
+		JJnet.seedAddress=seedAddress;
+		JJnet.seedPort=seedPort;
+		JJnet.seedType=seedType;
 		init();
 	}
 	
@@ -48,12 +49,12 @@ public class NetworkManager {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 		
-		localEndPointAddress=SecurityService.hashAsHex(
+		localEndPointAddress=SecurityService.hashAsBase64(
 				SecurityService.publicKeytoString(publicKey),
 				EndPoint.ENDPOINT_ADDRESS_LENGTH);
 		
 		log.info("localEndpoint= " + localEndPointAddress);
-		log.info("NetworkManager initialized!");
+		log.info("JJnet initialized!");
 	}
 	
 	public static void start(){
@@ -65,7 +66,13 @@ public class NetworkManager {
 	}
 	
 	
+	public static void addPipe(Pipe pipe){
+		pipes.add(pipe);
+	}
 	
+	public static void removePipe(Pipe pipe){
+		pipes.remove(pipe);
+	}
 	
 	
 	

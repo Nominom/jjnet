@@ -42,4 +42,7 @@ Network layer
 	- Forwards messages to neighbors using some algorithm (undecided)
 		- Exponential Decay Bloom Filter
 		- Hash table
+		
+		
+Do i need commons-codec?
 	

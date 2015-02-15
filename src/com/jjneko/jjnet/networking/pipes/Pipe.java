@@ -50,5 +50,18 @@ public abstract class Pipe {
 		return queue.size();
 	}
 	
+	public boolean isEmpty(){
+		return queue.isEmpty();
+	}
+	public void queuePacket(String packet){
+		queue.add(packet);
+	}
+	
+	/**
+	 * Example 122.45.33.45
+	 * @return returns the pipe's ip address as a string
+	 */
+	public abstract String getIPAddress();
+	
 
 }

@@ -119,6 +119,8 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
         } else {
             handshaker.handshake(ctx.channel(), req);
         }
+        
+        /* TODO disconnect clients that are not valid JJNET clients */
     }
 
 
@@ -145,11 +147,13 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
         	logger.info(ctx.channel()+" received: "+request);
         	pipes.get(id).queuePacket(request);
         }else{
-        	if(request.startsWith((Byte.toString(Protocol.PRP.value())))){
+        	if(request.startsWith(Protocol.PRP.toChar()+"")){
         		SimpleHttpServerPipe newpipe = new SimpleHttpServerPipe(null, ctx);
         		newpipe.connect();
         		newpipe.queuePacket(request);
-        	}else if(request.startsWith(Byte.toString(Protocol.NPP.value()))){
+        		pipes.put(id, newpipe);
+        		System.out.println("hoi");
+        	}else if(request.startsWith(Protocol.NPP.toChar()+"")){
 
         	}
         }
@@ -174,9 +178,14 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    	System.out.println("Exception caught!");
-        cause.printStackTrace();
-        ctx.close();
+    	String id = ctx.channel().id().asShortText();
+        logger.info(cause.getMessage());
+        try{
+        	pipes.get(id).close();
+        }catch(Exception ex){
+        	ctx.close();
+        }
+        logger.info(id+" closed");
     }
 
     private static String getWebSocketLocation(FullHttpRequest req) {

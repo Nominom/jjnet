@@ -48,8 +48,7 @@ public class XML {
 			logger.severe(e.getMessage());
 			e.printStackTrace();
 		}
-
-		return shash+xml.replace("\n", "");
+		return shash+xml;
 	}
 	
 	/**

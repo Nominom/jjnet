@@ -45,7 +45,7 @@ public class StunServer {
 	private static final Logger logger = Logger.getLogger(StunServer.class
 			.getName());
 
-	public static int stunServerPort = 3478;
+	public int stunServerPort = 3478;
 
 	public StunServer(int port) {
 		stunServerPort=port;

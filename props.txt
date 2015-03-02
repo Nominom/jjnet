@@ -9,3 +9,5 @@ jjneko.jjnet.natpmp.use // Specifies whether natpmp should be used to open ports
 jjneko.jjnet.http.usehttp // Specifies whether Http server should be started // default true
 jjneko.jjnet.udp.useudp // Specifies whether UDP listening server should be started // default true
 jjneko.jjnet.stun.usestun // Specifies whether STUN listening server should be started // default true
+
+jjneko.jjnet.db.dbname // Database name to use // default "jjnetdb"

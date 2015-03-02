@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 import com.jjneko.jjnet.database.DatabaseManager;
+import com.jjneko.jjnet.networking.discovery.Advertisement;
+import com.jjneko.jjnet.networking.discovery.AdvertisementService;
 import com.jjneko.jjnet.networking.pipes.Pipe;
 import com.jjneko.jjnet.networking.security.SecurityService;
 
@@ -21,12 +23,12 @@ public class JJnet {
 	public static PrivateKey privateKey=null;
 	public static PublicKey publicKey=null;
 	public static String localEndPointAddress="";
-	private static DatabaseManager database = null;
+	static DatabaseManager database = null;
 	/* TODO Don't know if i want to keep this*/
-	private static ArrayList<EndPoint> peers = new ArrayList<EndPoint>();
+	static ArrayList<EndPoint> peers = new ArrayList<EndPoint>();
 	public static long TIMESTAMP_VALID=10000;
-	private static int minNeighbours=1;
-	private static int maxNeighbours=5;
+	static int minNeighbours=1;
+	static int maxNeighbours=5;
 	public static NATType natType = NATType.UNSPECIFIED;
 	public static int natDelta = 0;
 	static String seedAddress;
@@ -34,6 +36,9 @@ public class JJnet {
 	static ConnectionType seedType;
 	static boolean useHttp = true, useUdp = true, useUPnP = true, useNATPnP = true;
 	static ConcurrentLinkedQueue<Pipe> pipes = new ConcurrentLinkedQueue<Pipe>();
+	static Thread msgHandler;
+	static boolean running = false;
+	static AdvertisementService adService;
 	
 	public static void init(String seedAddress, int seedPort, ConnectionType seedType){
 		JJnet.seedAddress=seedAddress;
@@ -43,7 +48,7 @@ public class JJnet {
 	}
 	
 	public static void init(){
-		database = new DatabaseManager();
+		setDatabase(new DatabaseManager());
 		
 		KeyPair kp = SecurityService.generateRSAKeyPair();
 		privateKey = kp.getPrivate();
@@ -53,16 +58,23 @@ public class JJnet {
 				SecurityService.publicKeytoString(publicKey),
 				EndPoint.ENDPOINT_ADDRESS_LENGTH);
 		
+		adService = new AdvertisementService();
+		
 		log.info("localEndpoint= " + localEndPointAddress);
 		log.info("JJnet initialized!");
 	}
 	
-	public static void start(){
-		
+	public synchronized static void start(){
+		if(running)
+			return;
+		msgHandler = new Thread(new MessageHandler());
+		msgHandler.start();
+		running=true;
 	}
 	
-	public static void stop(){
-		
+	public synchronized static void stop(){
+		if(!running)
+			return;
 	}
 	
 	
@@ -89,6 +101,10 @@ public class JJnet {
 	
 	
 	
+	public static ConcurrentLinkedQueue<Pipe> getPipes() {
+		return pipes;
+	}
+
 	public static EndPoint newPeerProtocol(String endpoint, String publicKey, long timestamp, String hashedStamp ){
 		try{
 //			Long currtime = System.currentTimeMillis();
@@ -119,6 +135,27 @@ public class JJnet {
 		
 		
 		return null;
+	}
+
+	/**
+	 * @return the database
+	 */
+	public static DatabaseManager getDatabase() {
+		return database;
+	}
+
+	/**
+	 * @param database the database to set
+	 */
+	private static void setDatabase(DatabaseManager database) {
+		JJnet.database = database;
+	}
+
+	/**
+	 * @return the adService
+	 */
+	public static AdvertisementService getAdvertisementService() {
+		return adService;
 	}
 
 }

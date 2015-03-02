@@ -9,30 +9,40 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
 import java.util.Scanner;
 
 import org.h2.jdbcx.JdbcDataSource;
 
+import com.jjneko.jjnet.messaging.XML;
+import com.jjneko.jjnet.networking.discovery.Advertisement;
+
 
 public class DatabaseManager {
 	
-	/* TODO remove the random!!!*/
-	public String databaseName = "jjnetdb"+(int)(Math.random()*100.0);
-	public Connection conn;
+	private Connection conn;
+	
+	private HashMap<String, Long> advertisements = new HashMap<String, Long>();
+	private HashMap<String, Integer> classes = new HashMap<String, Integer>();
 	
 	public DatabaseManager(){
 		try {
-			
+			String databaseName;
+			/* TODO remove the random!!!*/
+			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb"+(int)(Math.random()*20.0));
+//			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb");
 			JdbcDataSource ds = new JdbcDataSource();
 			ds.setURL("jdbc:h2:./"+databaseName);
-			ds.setUser("sa");
-			ds.setPassword("sa");
 			conn = ds.getConnection();
 			
-//			Scanner s = new Scanner(System.in);
-//			s.useDelimiter("\\s*[;]\\s*");
-//			String sql = s.next();
+			if(isEmpty()){
+				System.out.println("Database empty! Creating new schema..");
+				readSQLfile(new File("sqlfile.sql"));
+			}
+			
 			System.out.println("Database initialized!");
 		} catch (Exception e) {
 			System.out.println("Database initialization failed!");
@@ -41,6 +51,20 @@ public class DatabaseManager {
 		
 		
 	}
+	
+	protected boolean isEmpty() throws SQLException {
+        PreparedStatement stmt = conn.prepareStatement("show tables");
+        try {
+            ResultSet rs = stmt.executeQuery();
+            try {
+                return ! rs.next();
+            } finally {
+                rs.close();
+            }
+        } finally {
+            stmt.close();
+        }
+    }
 	
 	
 	 public void readSQLfile(File f) throws SQLException{
@@ -79,5 +103,111 @@ public class DatabaseManager {
 	        }
 	 
 	}
+
+	public Connection getConnection() {
+		return conn;
+	}
+	
+	public synchronized void insertAdvertisement(Advertisement ad){
+		/* TODO add timestamp checks and stuff */
+		String hash = Advertisement.generateHash(ad);
+		List<String> adclass = ad.getSuperClasses();
+		
+		if(!advertisements.containsKey(hash)){
+			String sql1 = "INSERT INTO t_advertisements(hash, advertisement) VALUES (?,?)";
+			String sql2 = "INSERT INTO t_advertisement_classes(advertisement_id, class_id) VALUES (?,?)";
+			
+			try{
+				PreparedStatement stmt1 = conn.prepareStatement(sql1);
+				stmt1.setBytes(1, hash.getBytes("ISO-8859-1"));
+				stmt1.setBytes(2, XML.toUnsignedXML(ad).getBytes("ISO-8859-1"));
+				
+				System.out.println(">> "+stmt1);
+				stmt1.execute();
+								
+				ResultSet rs = stmt1.getGeneratedKeys();
+				int id=0;
+				
+				if(rs.next())
+					id=rs.getInt(1);
+				
+				PreparedStatement stmt2 = conn.prepareStatement(sql2);
+				
+				for(String classs : adclass){
+					if(!classes.containsKey(classs)){
+						insertClass(classs);
+					}
+					
+					
+					
+					stmt2.setInt(1, id);
+					stmt2.setInt(2, classes.get(classs));
+					
+					System.out.println(">> "+stmt2);
+					stmt2.execute();
+				}
+				
+				stmt1.close();
+				stmt2.close();
+			}catch(Exception ex){ex.printStackTrace();}
+		}
+	}
+	
+	public synchronized ArrayList<Advertisement> getAdvertisements(String className, int limit){
+		ArrayList<Advertisement> ads = new ArrayList<Advertisement>();
+		String sql="";
+		PreparedStatement stmt1;
+		if(limit>0)
+			sql = "SELECT ad.id, hash, advertisement FROM t_advertisements AS ad JOIN t_advertisement_classes ON ad.id=advertisement_id JOIN t_classes AS cla ON cla.id=class_id WHERE class = ? ORDER BY RAND() LIMIT ?";
+		else
+			sql = "SELECT ad.id, hash, advertisement FROM t_advertisements AS ad JOIN t_advertisement_classes ON ad.id=advertisement_id JOIN t_classes AS cla ON cla.id=class_id WHERE class = ? ORDER BY RAND()";
+		try{
+			stmt1 = conn.prepareStatement(sql);
+			stmt1.setString(1, className);
+			if(limit>0)
+			stmt1.setInt(2, limit);
+			
+			System.out.println(stmt1);
+			ResultSet rs = stmt1.executeQuery();
+			
+			while(rs.next()){
+				Advertisement ad = (Advertisement) XML.parseUnsignedXML(new String(rs.getBytes(3),"ISO-8859-1"));
+				ads.add(ad);
+				System.out.println(ad);
+			}
+		}catch(Exception ex){
+			ex.printStackTrace();
+		}
+		
+		return ads;
+	}
+	
+	private void insertClass(String classs){
+		String sql1 = "INSERT INTO t_classes(class) VALUES(?)";
+		
+		try{
+			PreparedStatement stmt = conn.prepareStatement(sql1);
+			stmt.setString(1, classs);
+			
+			
+			System.out.println(">> "+stmt);
+			stmt.execute();
+			
+			ResultSet rs = stmt.getGeneratedKeys();
+			int id=0;
+			
+			if(rs.next())
+				id=rs.getInt(1);
+			
+			classes.put(classs, id);
+			
+			stmt.close();
+		}catch(Exception ex){ex.printStackTrace();}
+	}
+	
+	public synchronized void cleanUp(){
+		//TODO delete old stuff
+	}
+	
 
 }

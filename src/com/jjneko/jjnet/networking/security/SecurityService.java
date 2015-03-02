@@ -102,10 +102,6 @@ public class SecurityService {
 			throw new ParseException(
 					"Invalid key format! check this key for data corruption!",
 					0);
-//		else if (!sarr[0].matches("-?[0-9a-zA-Z]+") || !sarr[1].matches("-?[0-9a-zA-Z]+"))
-//			throw new ParseException(
-//					"Invalid key format! check this key for data corruption!",
-//					0);
 		else if (!Base64.isBase64(sarr[0])|| !Base64.isBase64(sarr[1]))
 		throw new ParseException(
 				"Invalid key format! check this key for data corruption!",
@@ -124,10 +120,6 @@ public class SecurityService {
 			throw new ParseException(
 					"Invalid key format! check this key for data corruption!",
 					0);
-//		else if (!sarr[0].matches("-?[0-9a-zA-Z]+") || !sarr[1].matches("-?[0-9a-zA-Z]+"))
-//		throw new ParseException(
-//				"Invalid key format! check this key for data corruption!",
-//				0);
 		else if (!Base64.isBase64(sarr[0])|| !Base64.isBase64(sarr[1]))
 		throw new ParseException(
 				"Invalid key format! check this key for data corruption!",

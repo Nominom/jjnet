@@ -34,6 +34,8 @@ public class UPnPService {
 		logger.info("Looking for Gateway Devices");
 		discover.discover();
 		device = discover.getValidGateway();
+		device=new GatewayDevice();
+        
 
 		if (null != device) {
 		    logger.log(Level.INFO, "Gateway device found.\n{0} ({1})", new Object[]{device.getModelName(), device.getModelDescription()});

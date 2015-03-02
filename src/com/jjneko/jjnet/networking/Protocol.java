@@ -60,7 +60,13 @@ public enum Protocol {
 	 * Used for multicasting messages to all peers in worldgroup
 	 * 0b0000 0111
 	 */
-	PMP((byte)7);
+	PMP((byte)7),
+	/**
+	 * ADVERTISEMENT REQUEST RESPONSE PROTOCOL<br/>
+	 * Used for responding to advertisement requests<br/>
+	 * 0b0000 0110
+	 */
+	ARRP((byte)8);
 	 
 	private byte value;
 	Protocol(byte value){

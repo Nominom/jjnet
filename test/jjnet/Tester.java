@@ -9,11 +9,17 @@ import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import org.xml.sax.SAXException;
 
+import com.jjneko.jjnet.messaging.XML;
 import com.jjneko.jjnet.networking.JJnet;
+import com.jjneko.jjnet.networking.discovery.Advertisement;
+import com.jjneko.jjnet.networking.discovery.AdvertisementService;
+import com.jjneko.jjnet.networking.discovery.NodeAdvertisement;
 import com.jjneko.jjnet.networking.http.HttpService;
 import com.jjneko.jjnet.networking.security.SecurityService;
 import com.jjneko.jjnet.networking.stun.StunServer;
@@ -22,10 +28,8 @@ import com.jjneko.jjnet.networking.upnp.UPnPService;
 
 public class Tester {
 	
-	public static void main(String[] args){
-		
-		JJnet nm = new JJnet();
-		nm.init();
+	public static void main(String[] args) throws UnknownHostException{
+		JJnet.init();
 		
 		try {
 			KeyPair kp = SecurityService.generateRSAKeyPair();
@@ -33,10 +37,10 @@ public class Tester {
 			PrivateKey priv = kp.getPrivate();
 			
 			System.out.println(" public= " + SecurityService.publicKeytoString(pub)
-					+"\n   hash= " + SecurityService.hash(SecurityService.publicKeytoString(pub))
+					+"\n   hash= " + SecurityService.hashAsBase64(SecurityService.publicKeytoString(pub))
 					+"\n  again= " + SecurityService.publicKeytoString(SecurityService.parsePublicKey(SecurityService.publicKeytoString(pub))));
 			System.out.println("private= " + SecurityService.privateKeytoString(priv)
-					 +"\n   hash= " + SecurityService.hash(SecurityService.privateKeytoString(priv))
+					 +"\n   hash= " + SecurityService.hashAsBase64(SecurityService.privateKeytoString(priv))
 					 +"\n  again= " + SecurityService.privateKeytoString(SecurityService.parsePrivateKey(SecurityService.privateKeytoString(priv))));
 			
 			String message = "Hashu";
@@ -79,16 +83,56 @@ public class Tester {
 			e.printStackTrace();
 		}
 		
+		NodeAdvertisement ad = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
+				https.getServerPort(), udp.getServerPort(), stun.stunServerPort);
+		try {
+			Thread.sleep(10);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		NodeAdvertisement add = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
+				https.getServerPort(), udp.getServerPort(), stun.stunServerPort);
+		
+		System.out.println(ad);
+		
+		for(String s : ad.getSuperClasses())
+			System.out.println(s);
+		System.out.println(Advertisement.generateHash(ad));
+		
+		
+		System.out.println(add);
+		for(String s : add.getSuperClasses())
+			System.out.println(s);
+		System.out.println(Advertisement.generateHash(add));
+		
+		String adxml = XML.toUnsignedXML(ad);
+		
+		System.out.println(adxml);
+		
+		NodeAdvertisement ad2 = (NodeAdvertisement) XML.parseUnsignedXML(adxml);
+		
+		AdvertisementService ads = new AdvertisementService();
+		ads.publish(ad2);
+		
+		System.out.println(ad2);
+		System.out.println(ad2.ipAddress);
+		
+		ads.fetchLocal(Advertisement.class.getName());
+		
 		try{
 //			upnp.start();
 //			int extHttpPort = upnp.mapPort(https.getServerPort(), "TCP", "http server");
-//			int extSTUNPort = upnp.mapPort(StunServer.stunServerPort, "UDP", "STUN server");
+//			int extSTUNPort = upnp.mapPort(stun.stunServerPort, "UDP", "STUN server");
+//			int extUDPPort = upnp.mapPort(udp.getServerPort(), "UDP", "UDP server");
 //			System.out.println("External HTTP port: "+ extHttpPort);
 //			System.out.println("External STUN port: "+ extSTUNPort);
+//			System.out.println("External UDP port: "+ extUDPPort);
+//
 //			
 //			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 //			    public void run() {
 //			    	try {
+//			    		System.out.println("Meow!");
 //						upnp.clearPortMappings();
 //					} catch (IOException e) {
 //						
@@ -97,11 +141,13 @@ public class Tester {
 //					}
 //			    }
 //			}));
-//			
+			
+			Thread.sleep(4000);
 		} catch(Exception e){
 			System.out.println("Could not start UPnP: "+ e.getMessage());
 		}
 		
+		JJnet.start();
 		
 	}
 

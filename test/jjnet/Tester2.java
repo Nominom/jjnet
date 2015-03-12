@@ -11,7 +11,7 @@ public class Tester2 {
 	
 	public static void main(String[] args){
 		try {
-			JJnet.init();
+			JJnet.initAsSeed();
 			InetAddress iadd = InetAddress.getLocalHost();
 			int port = 7555;
 			

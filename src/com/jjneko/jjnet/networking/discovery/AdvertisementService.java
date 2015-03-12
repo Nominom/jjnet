@@ -1,5 +1,8 @@
 package com.jjneko.jjnet.networking.discovery;
 
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.set.hash.THashSet;
+
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
@@ -10,8 +13,7 @@ import com.jjneko.jjnet.utils.JJNetUtils;
 
 public class AdvertisementService {
 	
-	private ArrayList<Advertisement> ads = new ArrayList<Advertisement>();
-	private ArrayList<Advertisement> published = new ArrayList<Advertisement>();
+	private THashSet<Advertisement> published = new THashSet<Advertisement>();
 	
 	/**
 	 * Fetch all advertisements from local cache corresponding the specified className
@@ -43,7 +45,12 @@ public class AdvertisementService {
 	}
 	
 	public void publish(Advertisement ad){
+		// TODO check if already published first
+		
 		published.add(ad);
+		JJnet.getDatabase().insertAdvertisement(ad);
+	}
+	public void add(Advertisement ad) {
 		JJnet.getDatabase().insertAdvertisement(ad);
 	}
 

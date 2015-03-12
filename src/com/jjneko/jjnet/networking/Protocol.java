@@ -15,7 +15,7 @@ public enum Protocol {
 	
 	/**
 	 * KEEP ALIVE PACKET<br/>
-	 * Used to keep the connection alive<br/>
+	 * Used to keep a connection alive<br/>
 	 * 0b0000 0000
 	 */
 	KAP((byte)0),
@@ -27,7 +27,7 @@ public enum Protocol {
 	NPP((byte)1),
 	/**
 	 * UNSAFE UNRELIABLE DIRECT PACKET PROTOCOL<br/>
-	 * Used to send unencrypted packets to a specified peer in a group. Packets may or may not be delivered.<br/>
+	 * Used to send packets to a specified peer in a group. Packets may or may not be delivered.<br/>
 	 * 0b0000 0010
 	 */
 	UUDPP((byte)2),
@@ -64,7 +64,7 @@ public enum Protocol {
 	/**
 	 * ADVERTISEMENT REQUEST RESPONSE PROTOCOL<br/>
 	 * Used for responding to advertisement requests<br/>
-	 * 0b0000 0110
+	 * 0b0000 1000
 	 */
 	ARRP((byte)8);
 	 

@@ -20,9 +20,10 @@ public class Tester2 {
 			
 			JJnet.start();
 			
-			Thread.sleep(6000);
-			
-			JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class.getName(),2);
+			for(int i=0;i<200;i++){
+				Thread.sleep(20000);
+				JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class.getName(),2);
+			}
 				
 		} catch (Exception e) {
 			// TODO Auto-generated catch block

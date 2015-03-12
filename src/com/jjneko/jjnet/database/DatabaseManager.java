@@ -113,12 +113,15 @@ public class DatabaseManager {
 		String hash = Advertisement.generateHash(ad);
 		List<String> adclass = ad.getSuperClasses();
 		
+		
 		if(!advertisements.containsKey(hash)){
 			String sql1 = "INSERT INTO t_advertisements(hash, advertisement) VALUES (?,?)";
 			String sql2 = "INSERT INTO t_advertisement_classes(advertisement_id, class_id) VALUES (?,?)";
+			PreparedStatement stmt1 = null;
+			PreparedStatement stmt2 = null;
 			
 			try{
-				PreparedStatement stmt1 = conn.prepareStatement(sql1);
+				stmt1 = conn.prepareStatement(sql1);
 				stmt1.setBytes(1, hash.getBytes("ISO-8859-1"));
 				stmt1.setBytes(2, XML.toUnsignedXML(ad).getBytes("ISO-8859-1"));
 				
@@ -131,7 +134,7 @@ public class DatabaseManager {
 				if(rs.next())
 					id=rs.getInt(1);
 				
-				PreparedStatement stmt2 = conn.prepareStatement(sql2);
+				stmt2 = conn.prepareStatement(sql2);
 				
 				for(String classs : adclass){
 					if(!classes.containsKey(classs)){
@@ -147,16 +150,30 @@ public class DatabaseManager {
 					stmt2.execute();
 				}
 				
-				stmt1.close();
-				stmt2.close();
+				
+				
+				advertisements.put(hash, ad.valid_until);
 			}catch(Exception ex){ex.printStackTrace();}
+			finally {
+				try {
+					stmt1.close();
+					stmt2.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}else{
+			System.out.println("ad already exists");
+			if(advertisements.get(hash) < ad.valid_until){
+				advertisements.put(hash, ad.valid_until);
+			}
 		}
 	}
 	
 	public synchronized ArrayList<Advertisement> getAdvertisements(String className, int limit){
 		ArrayList<Advertisement> ads = new ArrayList<Advertisement>();
 		String sql="";
-		PreparedStatement stmt1;
+		PreparedStatement stmt1 = null;
 		if(limit>0)
 			sql = "SELECT ad.id, hash, advertisement FROM t_advertisements AS ad JOIN t_advertisement_classes ON ad.id=advertisement_id JOIN t_classes AS cla ON cla.id=class_id WHERE class = ? ORDER BY RAND() LIMIT ?";
 		else
@@ -177,6 +194,12 @@ public class DatabaseManager {
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
+		}finally{
+			try {
+				stmt1.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 		}
 		
 		return ads;
@@ -184,9 +207,9 @@ public class DatabaseManager {
 	
 	private void insertClass(String classs){
 		String sql1 = "INSERT INTO t_classes(class) VALUES(?)";
-		
+		PreparedStatement stmt = null;
 		try{
-			PreparedStatement stmt = conn.prepareStatement(sql1);
+			stmt = conn.prepareStatement(sql1);
 			stmt.setString(1, classs);
 			
 			
@@ -201,8 +224,15 @@ public class DatabaseManager {
 			
 			classes.put(classs, id);
 			
-			stmt.close();
+			
 		}catch(Exception ex){ex.printStackTrace();}
+		finally{
+			try {
+				stmt.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 	
 	public synchronized void cleanUp(){

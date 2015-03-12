@@ -14,14 +14,15 @@ import com.jjneko.jjnet.utils.JJNetUtils;
 class MessageHandler implements Runnable {
 	
 	Logger logger = Logger.getLogger(MessageHandler.class.getName());
-	static{
-		Logger.getLogger(MessageHandler.class.getName()).setLevel(Level.FINEST);
-	}
+	
 
 	@Override
 	public void run() {
+		logger.setLevel(Level.FINEST);
 		while(true){
-			
+			try{
+				Thread.sleep(1000);
+			}catch(Exception ex){}
 			/* TODO Add data transfer cap */
 			
 			// Loop pipes
@@ -29,8 +30,9 @@ class MessageHandler implements Runnable {
 				if(p.isConnected() && !p.isEmpty()){
 					try{
 						String message = p.receive();
-						if(logger.getLevel()==Level.FINEST){
+						if(logger.getLevel().equals(Level.FINEST)){
 							logger.finest("msg:"+p.getIPAddress()+":"+message);
+							System.err.println("msg:"+p.getIPAddress()+":"+message);
 						}
 						char proto = message.charAt(0);
 						Protocol protocol = Protocol.fromChar(proto);
@@ -55,7 +57,10 @@ class MessageHandler implements Runnable {
 								p.send(response);
 							}
 						}else if(protocol==Protocol.ARRP){
-							
+							int responseLength = JJNetUtils.byteArrayToInt(message.substring(1, 5).getBytes("ISO-8859-1"));
+							String response = message.substring(5, responseLength+5);
+							Advertisement ad = (Advertisement) XML.parseUnsignedXML(response);
+							adService.add(ad);
 						}else if(protocol==Protocol.PMP){
 							
 						}

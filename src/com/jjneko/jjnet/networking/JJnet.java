@@ -22,11 +22,8 @@ public class JJnet {
 	 */
 	public static PrivateKey privateKey=null;
 	public static PublicKey publicKey=null;
-	public static String localEndPointAddress="";
+	public static EndPoint localEndPointAddress=null;
 	static DatabaseManager database = null;
-	/* TODO Don't know if i want to keep this*/
-	static ArrayList<EndPoint> peers = new ArrayList<EndPoint>();
-	public static long TIMESTAMP_VALID=10000;
 	static int minNeighbours=1;
 	static int maxNeighbours=5;
 	public static NATType natType = NATType.UNSPECIFIED;
@@ -39,6 +36,7 @@ public class JJnet {
 	static Thread msgHandler;
 	static boolean running = false;
 	static AdvertisementService adService;
+	static WorldGroup worldGroup;
 	
 	public static void init(String seedAddress, int seedPort, ConnectionType seedType){
 		JJnet.seedAddress=seedAddress;
@@ -54,15 +52,16 @@ public class JJnet {
 		privateKey = kp.getPrivate();
 		publicKey = kp.getPublic();
 		
-		localEndPointAddress=SecurityService.hashAsBase64(
-				SecurityService.publicKeytoString(publicKey),
-				EndPoint.ENDPOINT_ADDRESS_LENGTH);
+		localEndPointAddress=new EndPoint(publicKey);
 		
 		adService = new AdvertisementService();
 		
-		log.info("localEndpoint= " + localEndPointAddress);
+		worldGroup = new WorldGroup(localEndPointAddress);
+		
+		log.info("localEndpoint= " + localEndPointAddress.getAddress());
 		log.info("JJnet initialized!");
 	}
+	
 	
 	public synchronized static void start(){
 		if(running)
@@ -75,6 +74,7 @@ public class JJnet {
 	public synchronized static void stop(){
 		if(!running)
 			return;
+		/*TODO stop*/
 	}
 	
 	
@@ -127,10 +127,6 @@ public class JJnet {
 		}catch(Exception ex){
 			log.severe("NewPeerProtocol failed: "+ ex.getStackTrace());
 			return null;
-		}
-		
-		for(EndPoint ep : peers){
-			
 		}
 		
 		

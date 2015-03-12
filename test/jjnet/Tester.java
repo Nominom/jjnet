@@ -149,6 +149,15 @@ public class Tester {
 		
 		JJnet.start();
 		
+		for(int i=0;i<200;i++){
+			try {
+				Thread.sleep(20000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class.getName(),2);
+		}
 	}
 
 }

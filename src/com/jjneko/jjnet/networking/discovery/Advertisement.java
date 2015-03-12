@@ -30,7 +30,6 @@ public abstract class Advertisement{
 					e.printStackTrace();
 				} 
 			    if (value != null) {
-			        System.out.println(field.getName() + "=" + value);
 			        if(!field.getName().equals("valid_until")){
 			        	fields+=value;
 			        }

@@ -29,7 +29,7 @@ import com.jjneko.jjnet.networking.upnp.UPnPService;
 public class Tester {
 	
 	public static void main(String[] args) throws UnknownHostException{
-		JJnet.init();
+		JJnet.initAsSeed();
 		
 		try {
 			KeyPair kp = SecurityService.generateRSAKeyPair();

@@ -45,7 +45,13 @@ public class JJnet {
 		init();
 	}
 	
-	public static void init(){
+	public static void initAsSeed(){
+		worldGroup = new WorldGroup(localEndPointAddress);
+		init();
+
+	}
+	
+	private static void init(){
 		setDatabase(new DatabaseManager());
 		
 		KeyPair kp = SecurityService.generateRSAKeyPair();
@@ -56,7 +62,6 @@ public class JJnet {
 		
 		adService = new AdvertisementService();
 		
-		worldGroup = new WorldGroup(localEndPointAddress);
 		
 		log.info("localEndpoint= " + localEndPointAddress.getAddress());
 		log.info("JJnet initialized!");

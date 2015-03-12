@@ -133,6 +133,8 @@ public class JJnet {
 		return null;
 	}
 
+	/*TODO Better comments ^^;*/
+	
 	/**
 	 * @return the database
 	 */

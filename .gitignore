@@ -3,3 +3,4 @@
 *.mv.db
 *.trace.db
 /.settings
+*.log

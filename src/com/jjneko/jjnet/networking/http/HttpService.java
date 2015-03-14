@@ -20,6 +20,12 @@ public class HttpService {
 		server=new WebSocketHttpServer(SERVERPORT);
 	}
 	
+	public HttpService(){
+		SERVERPORT=-1;
+		
+		server=new WebSocketHttpServer(SERVERPORT);
+	}
+	
 	public void start() throws Exception{
 		if(!server.isStarted()){
 			server.start();
@@ -27,7 +33,7 @@ public class HttpService {
 	}
 
 	public int getServerPort() {
-		return SERVERPORT;
+		return server.getPort();
 	}
 
 }

@@ -14,8 +14,10 @@ import io.netty.handler.codec.http.websocketx.WebSocketVersion;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.URI;
+import java.util.Arrays;
 
 import com.jjneko.jjnet.messaging.XML;
 import com.jjneko.jjnet.networking.JJnet;
@@ -29,6 +31,16 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
 	InetAddress address;
 	int serverPort;
 	SimpleHttpClientPipe pipe;
+	private static byte[] requestMsg, responseMsg;
+	
+	static{
+		try {
+			requestMsg=(Protocol.PRP.toChar()+"?").getBytes("ISO-8859-1");
+			responseMsg=("!").getBytes("ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
 	
 	public SimpleHttpClientPipeInitializer(SimpleHttpClientPipe pipe, InetAddress address, int serverPort) {
 		this.pipe = pipe;
@@ -101,7 +113,7 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
             /* TODO better handshake '-' */
             pipe.ch = pipe.clientBootstrap.connect(uri.getHost(), port).sync().channel();
             handler.handshakeFuture().sync();
-            pipe.send(Protocol.PRP.toChar()+"ping");
+            pipe.send(requestMsg);
             long waitTime=0;
             while(pipe.isEmpty()){
             	try{
@@ -115,7 +127,7 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
             		}
             	}catch(Exception ex){}
             }
-            if(pipe.receiveHandshake().equals("pong"))
+            if(Arrays.equals(pipe.receiveHandshake(), responseMsg))
             	pipe.setConnected(true);
             else
             	pipe.close();

@@ -4,6 +4,8 @@ import gnu.trove.set.hash.THashSet;
 
 import java.util.Collection;
 
+import com.jjneko.jjnet.networking.discovery.WorldGroupAdvertisement;
+
 public class WorldGroup extends PeerGroup{
 	
 	/*TODO Move member list to database? */
@@ -12,6 +14,10 @@ public class WorldGroup extends PeerGroup{
 	
 	public WorldGroup(EndPoint owner) {
 		super("world", owner, true);
+	}
+
+	public WorldGroup(WorldGroupAdvertisement wgad) {
+		super(wgad.name,wgad.owner,wgad.anonymous);
 	}
 
 	@Override

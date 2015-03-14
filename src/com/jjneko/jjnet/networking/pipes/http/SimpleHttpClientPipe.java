@@ -24,6 +24,7 @@ import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.URI;
@@ -43,14 +44,14 @@ public class SimpleHttpClientPipe extends Pipe{
 	public Channel ch;
 	public EventLoopGroup group;
 	
-	public SimpleHttpClientPipe(EndPoint endpoint, final InetAddress address, final int serverPort) {
-		super(endpoint, null);
+	public SimpleHttpClientPipe(final InetAddress address, final int serverPort) {
+		super(null);
 		handshake = new SimpleHttpClientPipeInitializer(this, address, serverPort);
 		sendKeepAlive=false;
 	}
 
 	@Override
-	public void send(String message) {
+	public void send(byte[] message) {
 		if(!ch.isActive()){
 			close();
 			return;
@@ -58,24 +59,29 @@ public class SimpleHttpClientPipe extends Pipe{
 		
 //		channel.channel().writeAndFlush(message);
 		
-		WebSocketFrame frame = new TextWebSocketFrame(message);
+		WebSocketFrame frame=null;
+		try {
+			frame = new TextWebSocketFrame(new String(message, "ISO-8859-1"));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
         ch.writeAndFlush(frame);
 	}
 
 	@Override
-	public String receive(){
+	public byte[] receive(){
 		if(connected && !queue.isEmpty())
 			return queue.remove();
 		else return null;
 	}
 	
-	public String receiveHandshake(){
+	byte[] receiveHandshake(){
 		if(!queue.isEmpty())
 			return queue.remove();
 		return null;
 	}
 	
-	public void queuePacket(String packet){
+	public void queuePacket(byte[] packet){
 		System.out.println(getIPAddress());
 		queue.add(packet);
 	}

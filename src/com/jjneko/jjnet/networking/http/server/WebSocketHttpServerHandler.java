@@ -23,6 +23,7 @@ import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
 import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
 import static io.netty.handler.codec.http.HttpResponseStatus.OK;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import gnu.trove.map.hash.THashMap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -42,9 +43,6 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketServerHandshakerFactory;
 import io.netty.util.CharsetUtil;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.util.HashMap;
 import java.util.logging.Logger;
 
 import com.jjneko.jjnet.networking.Protocol;
@@ -63,7 +61,7 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
     
     private static boolean SSL = false;
     
-    public static HashMap<String, SimpleHttpServerPipe> pipes = new HashMap<String, SimpleHttpServerPipe>(10);
+    public static THashMap<String, SimpleHttpServerPipe> pipes = new THashMap<String, SimpleHttpServerPipe>(10);
     
     
     @Override
@@ -125,38 +123,40 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
 
 
     private void handleWebSocket(ChannelHandlerContext ctx, WebSocketFrame frame) {
-
-        // Check for closing frame
-        if (frame instanceof CloseWebSocketFrame) {
-            handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
-            return;
-        }
-        if (frame instanceof PingWebSocketFrame) {
-            ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
-            return;
-        }
-        if (!(frame instanceof TextWebSocketFrame)) {
-            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
-                    .getName()));
-        }
-
-        String id = ctx.channel().id().asShortText();
-        String request = ((TextWebSocketFrame) frame).text();
-        System.out.println(id+" "+request);
-        if(pipes.containsKey(id)){
-        	logger.info(ctx.channel()+" received: "+request);
-        	pipes.get(id).queuePacket(request);
-        }else{
-        	if(request.startsWith(Protocol.PRP.toChar()+"")){
-        		SimpleHttpServerPipe newpipe = new SimpleHttpServerPipe(null, ctx);
-        		newpipe.connect();
-        		newpipe.queuePacket(request);
-        		pipes.put(id, newpipe);
-        		System.out.println("hoi");
-        	}else if(request.startsWith(Protocol.NPP.toChar()+"")){
-
-        	}
-        }
+    	try{
+	        // Check for closing frame
+	        if (frame instanceof CloseWebSocketFrame) {
+	            handshaker.close(ctx.channel(), (CloseWebSocketFrame) frame.retain());
+	            return;
+	        }
+	        if (frame instanceof PingWebSocketFrame) {
+	            ctx.channel().write(new PongWebSocketFrame(frame.content().retain()));
+	            return;
+	        }
+	        if (!(frame instanceof TextWebSocketFrame)) {
+	            throw new UnsupportedOperationException(String.format("%s frame types not supported", frame.getClass()
+	                    .getName()));
+	        }
+	
+	        String id = ctx.channel().id().asShortText();
+	        String request = ((TextWebSocketFrame) frame).text();
+	        System.out.println(id+" "+request);
+	        if(pipes.containsKey(id)){
+	        	logger.info(ctx.channel()+" received: "+request);
+	        	pipes.get(id).queuePacket(request.getBytes("ISO-8859-1"));
+	        }else{
+	        	if(request.startsWith(Protocol.PRP.toChar()+"")){
+	        		SimpleHttpServerPipe newpipe = new SimpleHttpServerPipe(null, ctx);
+	        		newpipe.connect();
+	        		newpipe.queuePacket(request.getBytes("ISO-8859-1"));
+	        		pipes.put(id, newpipe);
+	        	}else if(request.startsWith(Protocol.NPP.toChar()+"")){
+	
+	        	}
+	        }
+    	}catch(Exception ex){
+    		ex.printStackTrace();
+    	}
     }
 
     private static void sendHttpResponse(

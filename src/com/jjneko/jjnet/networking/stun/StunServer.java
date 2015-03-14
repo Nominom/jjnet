@@ -56,6 +56,7 @@ public class StunServer {
 	}
 
 	public void start() throws IOException {
+		
 		new StunUdpListener(stunServerPort);
 	}
 
@@ -72,11 +73,37 @@ public class StunServer {
 			try {
 				socket = new DatagramSocket(stunServerPort);
 			} catch (SocketException e) {
+				logger.warning("Stun server port was already in use. Trying again with a new port.");
+				try{
+					socket = new DatagramSocket();
+					this.stunServerPort=socket.getLocalPort();
+				}catch(SocketException ex){
+					throw new IOException("Can't create DatagramSocket:  "
+							+ ex.getMessage());
+				}
+			}
+
+			this.stunServerPort = stunServerPort;
+
+			synchronized (this) {
+				start();
+
+				try {
+					wait();
+				} catch (InterruptedException e) {
+				}
+			}
+		}
+		
+		public StunUdpListener() throws IOException {
+			try {
+				socket = new DatagramSocket();
+			} catch (SocketException e) {
 				throw new IOException("Can't create DatagramSocket:  "
 						+ e.getMessage());
 			}
 
-			this.stunServerPort = stunServerPort;
+			this.stunServerPort = socket.getLocalPort();
 
 			synchronized (this) {
 				start();
@@ -111,11 +138,6 @@ public class StunServer {
 
 	}
 
-
-	/*
-	 * This is called from the voice bridge when a packet is received which
-	 * looks like a STUN Binding request rather than an RTP packet.
-	 */
 	public void processStunRequest(DatagramChannel channel,
 			InetSocketAddress isa, byte[] request) {
 

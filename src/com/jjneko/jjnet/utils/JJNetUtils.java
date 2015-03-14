@@ -1,5 +1,7 @@
 package com.jjneko.jjnet.utils;
 
+import java.net.ServerSocket;
+
 public class JJNetUtils {
 	public static int byteArrayToInt(byte[] b) 
 	throws IndexOutOfBoundsException{
@@ -17,5 +19,19 @@ public class JJNetUtils {
 	        (byte) ((a >> 8) & 0xFF),   
 	        (byte) (a & 0xFF)
 	    };
+	}
+	
+	public static int getRandomAvailablePort(){
+		int port=2048;
+		boolean br=false;
+		while(port<49151 && !br){
+			try{
+				new ServerSocket(port).close();
+				br=true;
+			}catch(Exception ex){
+				port++;
+			}
+		}
+		return port;
 	}
 }

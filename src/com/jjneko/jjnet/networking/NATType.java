@@ -1,10 +1,12 @@
 package com.jjneko.jjnet.networking;
 
+import java.io.UnsupportedEncodingException;
+
 public enum NATType {
 	
 	
 	/**
-	 * When NAT type has not been specified yet
+	 * When NAT type can not be specified for some reason
 	 * 0b0000 0000
 	 */
 	UNSPECIFIED((byte)0),
@@ -35,6 +37,31 @@ public enum NATType {
 	
 	public byte value(){
 		return value;
+	}
+	
+	public char toChar(){
+		try {
+			return new String(new byte[]{value}, "ISO-8859-1").charAt(0);
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+			System.exit(1);
+			return '0';
+		}
+	}
+	
+	public static NATType fromChar(char ch){
+		try {
+			byte b = new String(new char[]{ch}).getBytes("ISO-8859-1")[0];
+			for(NATType p : NATType.values()){
+				if(b==p.value())
+				return p;
+			}
+			return null;
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 }

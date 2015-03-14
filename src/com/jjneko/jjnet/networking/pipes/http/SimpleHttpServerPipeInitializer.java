@@ -1,5 +1,8 @@
 package com.jjneko.jjnet.networking.pipes.http;
 
+import java.io.UnsupportedEncodingException;
+import java.util.Arrays;
+
 import com.jjneko.jjnet.networking.JJnet;
 import com.jjneko.jjnet.networking.Protocol;
 
@@ -7,6 +10,15 @@ public class SimpleHttpServerPipeInitializer implements Runnable{
 
 	private static final long HANDSHAKE_TIMEOUT=5000;
 	SimpleHttpServerPipe pipe;
+	private static byte[] requestMsg, responseMsg;
+	static{
+		try {
+			requestMsg=(Protocol.PRP.toChar()+"?").getBytes("ISO-8859-1");
+			responseMsg=("!").getBytes("ISO-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public SimpleHttpServerPipeInitializer(SimpleHttpServerPipe pipe) {
 		this.pipe = pipe;
@@ -28,8 +40,8 @@ public class SimpleHttpServerPipeInitializer implements Runnable{
         		}
         	}catch(Exception ex){}
         }
-        if(pipe.receiveHandshake().equals(Protocol.PRP.toChar()+"ping")){
-        	pipe.send("pong");
+        if(Arrays.equals(pipe.receiveHandshake(), requestMsg)){
+        	pipe.send(responseMsg);
         	pipe.setConnected(true);
     		JJnet.addPipe(pipe);
     		System.out.println("Pipe connected!");

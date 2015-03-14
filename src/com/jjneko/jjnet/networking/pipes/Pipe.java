@@ -7,20 +7,22 @@ import com.jjneko.jjnet.networking.EndPoint;
 
 public abstract class Pipe {
 	
-	protected final LinkedList<String> queue = new LinkedList<String>();
+	protected final LinkedList<byte[]> queue = new LinkedList<byte[]>();
 	public boolean sendKeepAlive=false;
 	protected boolean connected=false;
-	protected EndPoint endPoint;
 	protected Runnable handshake;
 	
-	public Pipe(EndPoint endpoint, Runnable handshake){
-		this.endPoint=endpoint;
+	public Pipe(Runnable handshake){
 		this.handshake=handshake;
 	}
 	
-	public abstract void send(String message);
+	public Pipe(){
+		
+	}
 	
-	public abstract String receive();
+	public abstract void send(byte[] message);
+	
+	public abstract byte[] receive();
 	
 	public abstract void sendKeepAlive();
 	
@@ -37,14 +39,6 @@ public abstract class Pipe {
 	public void setConnected(boolean connected) {
 		this.connected = connected;
 	}
-
-	public EndPoint getEndPoint() {
-		return endPoint;
-	}
-
-	public void setEndPoint(EndPoint endPoint) {
-		this.endPoint = endPoint;
-	}
 	
 	public int getQueueLength(){
 		return queue.size();
@@ -53,7 +47,7 @@ public abstract class Pipe {
 	public boolean isEmpty(){
 		return queue.isEmpty();
 	}
-	public void queuePacket(String packet){
+	public void queuePacket(byte[] packet){
 		queue.add(packet);
 	}
 	

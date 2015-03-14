@@ -7,7 +7,7 @@ import java.util.logging.Logger;
 public class UDPService {
 	
 	Logger logger = Logger.getLogger(UDPService.class.getName());
-	private final int serverport;
+	private int serverport;
 	private DatagramSocket socket;
 	private UDPServer server;
 	private Thread packetHandler;
@@ -16,9 +16,17 @@ public class UDPService {
 		this.serverport=serverPort;
 	}
 	
+	public UDPService(){
+		this.serverport=-1;
+	}
+	
 	public void start() throws SocketException{
 		logger.info("Starting UDP Listening port in port "+serverport);
-		socket=new DatagramSocket(serverport);
+		if(serverport==-1){
+			socket=new DatagramSocket();
+			serverport=socket.getLocalPort();
+		}else
+			socket=new DatagramSocket(serverport);
 		server=new UDPServer(socket);
 		packetHandler = new Thread(server);
 		packetHandler.start();

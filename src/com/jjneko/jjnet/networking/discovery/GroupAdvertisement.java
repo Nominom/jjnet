@@ -2,30 +2,27 @@ package com.jjneko.jjnet.networking.discovery;
 
 import com.jjneko.jjnet.networking.EndPoint;
 
-public class GroupAdvertisement {
+public class GroupAdvertisement extends Advertisement{
 	
 	public String name;
 	public String id;
 	public EndPoint owner;
 	public boolean anonymous;
-	public String className;
 	
-	public GroupAdvertisement(String name, String id, EndPoint owner,
-			boolean anonymous, String className) {
-		super();
+	public GroupAdvertisement(long validUntil, String name, String id, EndPoint owner,
+			boolean anonymous) {
+		super(validUntil);
 		this.name = name;
 		this.id = id;
 		this.owner = owner;
 		this.anonymous = anonymous;
-		this.className = className;
 	}
 	
 	
 	@Override
 	public String toString() {
 		return "GroupAdvertisement [name=" + name + ", id=" + id + ", owner="
-				+ owner + ", anonymous=" + anonymous + ", className="
-				+ className + "]";
+				+ owner + ", anonymous=" + anonymous + "]";
 	}
 
 	

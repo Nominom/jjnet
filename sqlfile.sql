@@ -1,12 +1,12 @@
 CREATE TABLE t_advertisements (
 	id int primary key auto_increment not null ,
-	hash varbinary not null,
+	hash varbinary not null unique,
 	advertisement varbinary not null
 );
 
 CREATE TABLE t_classes (
 	id int primary key auto_increment not null,
-	class varchar not null
+	class varchar not null unique
 );
 
 CREATE TABLE t_advertisement_classes (

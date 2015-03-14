@@ -1,5 +1,6 @@
 package com.jjneko.jjnet.networking.pipes.http;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetSocketAddress;
 import java.util.LinkedList;
 
@@ -17,30 +18,35 @@ public class SimpleHttpServerPipe extends Pipe{
 	public ChannelHandlerContext channel;
 	
 	public SimpleHttpServerPipe(EndPoint endpoint, ChannelHandlerContext channel) {
-		super(endpoint, null);
+		super(null);
 		this.channel=channel;
 		handshake = new SimpleHttpServerPipeInitializer(this);
 		sendKeepAlive=false;
 	}
 
 	@Override
-	public void send(String message) {
+	public void send(byte[] message) {
 		if(!channel.channel().isActive()){
 			close();
 			return;
 		}
-		WebSocketFrame frame = new TextWebSocketFrame(message);
+		WebSocketFrame frame = null;
+		try {
+			frame = new TextWebSocketFrame(new String(message, "ISO-8859-1"));
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		channel.channel().writeAndFlush(frame);
 	}
 
 	@Override
-	public String receive(){
+	public byte[] receive(){
 		if(connected && !queue.isEmpty())
 			return queue.remove();
 		else return null;
 	}
 	
-	public String receiveHandshake(){
+	byte[] receiveHandshake(){
 		if(!queue.isEmpty())
 			return queue.remove();
 		return null;

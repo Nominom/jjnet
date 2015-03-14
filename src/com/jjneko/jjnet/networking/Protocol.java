@@ -102,4 +102,18 @@ public enum Protocol {
 		}
 	}
 	
+	public static Protocol fromByte(byte b){
+		try {
+			for(Protocol p : Protocol.values()){
+				if(b==p.value())
+				return p;
+			}
+			return null;
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 };

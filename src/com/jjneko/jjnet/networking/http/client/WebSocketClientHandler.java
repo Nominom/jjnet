@@ -37,6 +37,8 @@
 
 package com.jjneko.jjnet.networking.http.client;
 
+import java.nio.charset.Charset;
+
 import com.jjneko.jjnet.networking.pipes.Pipe;
 
 import io.netty.channel.Channel;
@@ -102,7 +104,7 @@ public class WebSocketClientHandler extends SimpleChannelInboundHandler<Object> 
         WebSocketFrame frame = (WebSocketFrame) msg;
         if (frame instanceof TextWebSocketFrame) {
             TextWebSocketFrame textFrame = (TextWebSocketFrame) frame;
-            pipe.queuePacket(textFrame.text());
+            pipe.queuePacket(textFrame.text().getBytes("ISO-8859-1"));
         }else if (frame instanceof CloseWebSocketFrame) {
             System.out.println("WebSocket Client received closing");
             ch.close();

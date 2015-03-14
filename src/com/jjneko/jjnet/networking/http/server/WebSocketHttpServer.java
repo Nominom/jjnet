@@ -1,5 +1,9 @@
 package com.jjneko.jjnet.networking.http.server;
 
+import java.net.InetSocketAddress;
+
+import com.jjneko.jjnet.utils.JJNetUtils;
+
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.EventLoopGroup;
@@ -15,7 +19,7 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
  */
 public final class WebSocketHttpServer{
 	
-	private final int PORT;
+	private int port;
 	private final boolean SSL;
 	private boolean started=false;
 	private EventLoopGroup bossGroup;
@@ -23,7 +27,7 @@ public final class WebSocketHttpServer{
 	private Channel channel;
 	
 	public WebSocketHttpServer(int port){
-		this.PORT=port;
+		this.port=port;
 		this.SSL=Boolean.parseBoolean(System.getProperty("jjneko.jjnet.http.useSSL", "false"));
         WebSocketHttpServerHandler.setSSL(SSL);
 	}
@@ -68,11 +72,14 @@ public final class WebSocketHttpServer{
         else if(logLevelString.equals("TRACE"))
         	logLevel=LogLevel.TRACE;
         
-        System.out.println(logLevel);
         boostrap.handler(new LoggingHandler(logLevel));
 
         System.err.println("HTTPSERVER - creating channel");
-        channel = boostrap.bind(PORT).sync().channel();
+        if(port==-1)
+        	channel = boostrap.bind(JJNetUtils.getRandomAvailablePort()).sync().channel();
+        else
+        	channel = boostrap.bind(port).sync().channel();
+        this.port=((InetSocketAddress)channel.localAddress()).getPort();
         System.err.println("HTTPSERVER - channel created");
         started=true;
 	}
@@ -94,8 +101,8 @@ public final class WebSocketHttpServer{
 	/**
 	 * @return returns the port in which the http server is running
 	 */
-	public int getPORT() {
-		return PORT;
+	public int getPort() {
+		return port;
 	}
 
 	/**
@@ -111,5 +118,6 @@ public final class WebSocketHttpServer{
 	public boolean isStarted() {
 		return started;
 	}
+	
 
 }

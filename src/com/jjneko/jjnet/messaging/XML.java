@@ -25,10 +25,7 @@ public class XML {
 	
 	/**
 	 * Create a signed XML string from any object
-	 * @throws BadPaddingException 
-	 * @throws IllegalBlockSizeException 
 	 * @throws InvalidKeyException 
-	 * @throws UnsupportedEncodingException 
 	 */
 	public static String toSignedXML(Object object, PrivateKey key) throws InvalidKeyException{
 		StringWriter sw = new StringWriter();

@@ -1,5 +1,6 @@
 package com.jjneko.jjnet.utils;
 
+import java.net.DatagramSocket;
 import java.net.ServerSocket;
 
 public class JJNetUtils {
@@ -27,6 +28,7 @@ public class JJNetUtils {
 		while(port<49151 && !br){
 			try{
 				new ServerSocket(port).close();
+				new DatagramSocket(port).close();
 				br=true;
 			}catch(Exception ex){
 				port++;

@@ -70,7 +70,7 @@ public class Tester5 {
 	public static void test1(){
 		Runtime runtime = Runtime.getRuntime();
 		System.out.println("java.util hashSet");
-	    HashSet<Integer> util = new HashSet<Integer>(count);
+	    HashSet<Integer> util = new HashSet<Integer>(2);
 	    
 	    long beforeTime=System.currentTimeMillis();
 	    for(int i=0;i<count;i++){
@@ -95,7 +95,7 @@ public class Tester5 {
 	public static void test2(){
 		Runtime runtime = Runtime.getRuntime();
 		System.out.println("gnu.trove hashSet");
-	    TIntHashSet util = new TIntHashSet(count);
+	    TIntHashSet util = new TIntHashSet(2);
 	    
 	    long beforeTime=System.currentTimeMillis();
 	    for(int i=0;i<count;i++){

@@ -32,8 +32,8 @@ public class DatabaseManager {
 		try {
 			String databaseName;
 			/* TODO remove the random!!!*/
-//			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb"+(int)(Math.random()*20.0));
-			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb");
+			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb"+(int)(Math.random()*20.0));
+//			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb");
 			JdbcDataSource ds = new JdbcDataSource();
 			ds.setURL("jdbc:h2:./"+databaseName);
 			conn = ds.getConnection();
@@ -117,7 +117,7 @@ public class DatabaseManager {
 		PreparedStatement stmt1 = null;
 		String sql2 = "SELECT class, id FROM t_classes";
 		PreparedStatement stmt2 = null;
-		String sql3 = "DELETE FROM t_advertisements where id IN(SELECT ad.id FROM t_advertisements AS ad JOIN t_advertisement_classes ON ad.id=advertisement_id JOIN t_classes AS cla ON cla.id=class_id WHERE class = 'com.jjneko.jjnet.networking.discovery.WorldGroupAdvertisement')";
+		String sql3 = "DELETE FROM t_advertisements where (SELECT true FROM t_advertisements AS ad JOIN t_advertisement_classes ON ad.id=advertisement_id JOIN t_classes AS cla ON cla.id=class_id WHERE class = 'com.jjneko.jjnet.networking.discovery.WorldGroupAdvertisement')";
 		PreparedStatement stmt3 = null;
 		try{
 			stmt1=conn.prepareStatement(sql1);

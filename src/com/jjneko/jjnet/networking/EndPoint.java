@@ -81,6 +81,11 @@ public class EndPoint {
 				EndPoint.ENDPOINT_ADDRESS_LENGTH);
 	}
 
+	@Override
+	public String toString() {
+		return address;
+	}
+
 	
 
 }

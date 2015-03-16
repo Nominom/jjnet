@@ -63,5 +63,19 @@ public enum NATType {
 			return null;
 		}
 	}
+	
+	public static NATType fromByte(byte b){
+		try {
+			for(NATType p : NATType.values()){
+				if(b==p.value())
+				return p;
+			}
+			return null;
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 }

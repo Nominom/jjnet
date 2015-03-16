@@ -1,5 +1,6 @@
 package jjnet;
 
+
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -10,7 +11,7 @@ import com.jjneko.jjnet.networking.http.HttpService;
 import com.jjneko.jjnet.networking.security.SecurityService;
 
 public class Tester4 {
-	
+		
 	public static void main(String[] args){
 		long startTime = System.currentTimeMillis();
 		

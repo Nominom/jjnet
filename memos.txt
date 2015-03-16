@@ -5,14 +5,9 @@ http://stackoverflow.com/questions/21501359/p2p-message-transfer-behind-firewall
 http://en.wikipedia.org/wiki/UDP_hole_punching
 http://jstun.javawi.de/
 
-http://stackoverflow.com/questions/5059224/which-is-the-best-library-for-xml-parsing-in-java
 
-
-Maybe a distributed database type user database
 - Every peer knows some of the other peers (ones they have had to interact with in the past)
-- Works with advertisements
-- Newer advertisements rewrite older ones with timestamps
-- Modifications that don't come directly from the user have to be verified by multiple peers
+- Network discovery works with advertisements
 - Asymmetric key verification
 - Database cleanup
 
@@ -23,15 +18,13 @@ RSA-Encryption
 
 
 
-Application layer
-	- Developer decides
 
 Peer group layer
 	- supports queries, relayed pipes and multicasting? Private groups can be configured to allow direct connections.
 		- Limit on how many queries/multicasts a peer can send and forward per second
 	- private/public keys to ensure authenticity
 	- Traffic mostly encrypted
-	- Hard/"Impossible" to pinpoint origin IP
+	- Hard/"Impossible" to pinpoint origin IP if the group is anonymous
 	- IP =/= Peer
 
 Network layer
@@ -39,10 +32,14 @@ Network layer
 		- Advertisements relay information like available STUN servers or potential neighbors
 		- Advertisements are saved locally and published
 		- Nodes can query neighbor nodes for advertisements, but these queries are not forwarded to neighbors' neighbor's.
-	- Forwards messages to neighbors using some algorithm (undecided)
-		- Exponential Decay Bloom Filter
-		- Hash table
+	- Forwards messages to neighbors
+		- Exponential Decay Bloom Filter?
+		- Hash table?
 		
 		
-Do i need commons-codec?
-	
+
+To fix later
+	- Attacker can overflow a neighbor by sending Advertisement response packets with fake information and potentially steer the target to a separate infected network
+		- Only accept so many ARRP packets from a single neighbor?
+	- Attacker can initiate lots of connections with a single peer to push legitimate peers out of it's pipe queue.
+		- Maybe mark some neighbors as "want-to-keep"?

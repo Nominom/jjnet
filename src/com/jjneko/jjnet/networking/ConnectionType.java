@@ -50,4 +50,18 @@ public enum ConnectionType {
 			return null;
 		}
 	}
+	
+	public static ConnectionType fromByte(byte b){
+		try {
+			for(ConnectionType p : ConnectionType.values()){
+				if(b==p.value())
+				return p;
+			}
+			return null;
+				
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 }

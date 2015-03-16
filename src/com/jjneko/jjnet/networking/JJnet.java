@@ -21,6 +21,8 @@ import com.jjneko.jjnet.networking.upnp.UPnPService;
 
 public class JJnet {
 	
+	public static final int BUFFER_LENGTH=16384;
+	
 	private static Logger log = Logger.getLogger(JJnet.class.getName());
 	
 	/**

@@ -157,6 +157,19 @@ public class Tester {
 		}
 		ArrayList<Advertisement> ads = JJnet.getAdvertisementService().fetchLocal(WorldGroupAdvertisement.class);
 		
+		NodeAdvertisement ad = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
+		0, 0, 0);
+		NodeAdvertisement ad2 = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
+				0, 0, 354);
+		NodeAdvertisement ad3 = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
+				0, 354, 0);
+		NodeAdvertisement ad4 = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
+				354, 0, 0);
+		
+		JJnet.getAdvertisementService().publish(ad);
+		JJnet.getAdvertisementService().publish(ad2);
+		JJnet.getAdvertisementService().publish(ad3);
+		JJnet.getAdvertisementService().publish(ad4);
 		
 		for(int i=0;i<200;i++){
 			try {

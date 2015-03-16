@@ -59,13 +59,19 @@ public class AdvertisementService {
 	 * @param adsPerPeer
 	 */
 	public void fetchRemote(Class<?> adClass, int adsPerPeer){
+		String className = adClass.getName();
+		byte[] msg = new byte[className.length()+9];
+		try {
+			msg[0]=Protocol.ARP.value();
+			System.arraycopy(JJNetUtils.intToByteArray(className.length()), 0, msg, 1, 4);
+			System.arraycopy(JJNetUtils.intToByteArray(adsPerPeer), 0, msg, 5, 4);
+			System.arraycopy(className.getBytes("ISO-8859-1"), 0, msg, 9, className.length());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		for(Pipe pipe : JJnet.getPipes()){
-			try {
-				if(pipe.isConnected()){
-					pipe.send((Protocol.ARP.toChar()+new String(JJNetUtils.intToByteArray(adClass.getName().length()),"ISO-8859-1")+adClass.getName()+adsPerPeer).getBytes("ISO-8859-1"));
-				}
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+			if(pipe.isConnected()){
+				pipe.send(msg);
 			}
 		}
 	}
@@ -77,13 +83,18 @@ public class AdvertisementService {
 	 * @param adsPerPeer
 	 */
 	public void fetchRemote(String className, int adsPerPeer){
+		byte[] msg = new byte[className.length()+9];
+		try {
+			msg[0]=Protocol.ARP.value();
+			System.arraycopy(JJNetUtils.intToByteArray(className.length()), 0, msg, 1, 4);
+			System.arraycopy(JJNetUtils.intToByteArray(adsPerPeer), 0, msg, 5, 4);
+			System.arraycopy(className.getBytes("ISO-8859-1"), 0, msg, 9, className.length());
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
 		for(Pipe pipe : JJnet.getPipes()){
-			try {
-				if(pipe.isConnected()){
-					pipe.send((Protocol.ARP.toChar()+new String(JJNetUtils.intToByteArray(className.length()),"ISO-8859-1")+className+adsPerPeer).getBytes("ISO-8859-1"));
-				}
-			} catch (UnsupportedEncodingException e) {
-				e.printStackTrace();
+			if(pipe.isConnected()){
+				pipe.send(msg);
 			}
 		}
 	}

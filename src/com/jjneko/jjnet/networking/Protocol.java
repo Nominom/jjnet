@@ -66,7 +66,19 @@ public enum Protocol {
 	 * Used for responding to advertisement requests<br/>
 	 * 0b0000 1000
 	 */
-	ARRP((byte)8);
+	ARRP((byte)8),
+	/**
+	 * PEER LIST REQUEST PROTOCOL<br/>
+	 * Used for asking neighbors for the list of peers in a group<br/>
+	 * 0b0000 1001
+	 */
+	PLRP((byte)9),
+	/**
+	 * PEER LIST REQUEST RESPONSE PROTOCOL<br/>
+	 * Used for returning a list of peers in a group<br/>
+	 * 0b0000 1010
+	 */
+	PLRRP((byte)10);
 	 
 	private byte value;
 	Protocol(byte value){

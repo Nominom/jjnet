@@ -44,3 +44,4 @@ To fix later
 	- Attacker can initiate lots of connections with a single peer to push legitimate peers out of it's pipe queue.
 		- Maybe mark some neighbors as "want-to-keep"?
 	- Attacker can crash any remote peer by making L4Z compression expect a super large array (probably have to look out for this in the future too in other methods)
+	

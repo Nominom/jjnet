@@ -1,5 +1,6 @@
 package com.jjneko.jjnet.networking;
 
+import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -63,7 +64,8 @@ public class JJnet {
 		JJnet.UDPPort=UdpPort;
 		init(useHttp, useUdp, useUPnP, useNATPnP);
 		worldGroup = new WorldGroup(localEndPointAddress);
-		WorldGroupAdvertisement wgad = new WorldGroupAdvertisement(worldGroup.owner,true);
+		worldGroup.addMember(localEndPointAddress);
+		WorldGroupAdvertisement wgad = new WorldGroupAdvertisement(worldGroup.owner,true,worldGroup.getMemberCount());
 		adService.publish(wgad);
 	}
 	
@@ -164,6 +166,27 @@ public class JJnet {
 		
 		return null;
 	}
+	
+	static boolean receivingPeerList=false;
+	private static void FetchPeerList(PeerGroup group){
+		/*TODO Better peer list fetching implementation*/
+		byte[] message = new byte[1+PeerGroup.ID_LENGTH];
+		message[0]=Protocol.PLRP.value();
+		receivingPeerList=true;
+		try {
+			System.arraycopy(group.getId().getBytes("ISO-8859-1"), 0, message, 1, PeerGroup.ID_LENGTH);
+			pipes.peek().send(message);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
+	
+	
+	
+	
+	
+	
 
 	/*TODO Better comments ^^;*/
 	
@@ -247,9 +270,14 @@ public class JJnet {
 						break;
 					}catch(Exception ex){}
 				}
+				FetchPeerList(worldGroup);
 			}
 			System.out.println("initialized");
 		}
+	}
+	
+	static class PeerListBuilder{
+		int listLength=0;
 	}
 
 	

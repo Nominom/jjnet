@@ -35,4 +35,8 @@ public class WorldGroup extends PeerGroup{
 		members.add(e);
 	}
 
+	public int getMemberCount() {
+		return members.size();
+	}
+
 }

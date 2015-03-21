@@ -17,6 +17,7 @@ import java.util.UUID;
 import org.xml.sax.SAXException;
 
 import com.jjneko.jjnet.messaging.XML;
+import com.jjneko.jjnet.networking.EndPoint;
 import com.jjneko.jjnet.networking.JJnet;
 import com.jjneko.jjnet.networking.discovery.Advertisement;
 import com.jjneko.jjnet.networking.discovery.AdvertisementService;
@@ -170,6 +171,13 @@ public class Tester {
 		JJnet.getAdvertisementService().publish(ad2);
 		JJnet.getAdvertisementService().publish(ad3);
 		JJnet.getAdvertisementService().publish(ad4);
+		
+		long beforeTime= System.nanoTime();
+		for(int i=0;i<10;i++){
+			beforeTime= System.nanoTime();
+			JJnet.getWorldGroup().addMember(new EndPoint(SecurityService.generateRSAKeyPair().getPublic()));
+			System.out.println("keygen took "+(float)(System.nanoTime()-beforeTime)/1000000f+"ms");
+		}
 		
 		for(int i=0;i<200;i++){
 			try {

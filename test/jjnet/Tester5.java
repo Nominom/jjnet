@@ -6,6 +6,7 @@ import gnu.trove.set.hash.TIntHashSet;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 
@@ -64,7 +65,6 @@ public class Tester5 {
 	    
 	    initialMemory = runtime.totalMemory() - runtime.freeMemory();
 	    System.out.println("Initial used memory: "+ initialMemory/1024);
-		
 	}
 	
 	public static void test1(){

@@ -140,9 +140,8 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
 	
 	        String id = ctx.channel().id().asShortText();
 	        String request = ((TextWebSocketFrame) frame).text();
-	        System.out.println(id+" "+request);
 	        if(pipes.containsKey(id)){
-	        	logger.info(ctx.channel()+" received: "+request);
+	        	logger.finer(ctx.channel()+" received: "+request);
 	        	pipes.get(id).queuePacket(request.getBytes("ISO-8859-1"));
 	        }else{
 	        	if(request.startsWith(Protocol.PRP.toChar()+"")){

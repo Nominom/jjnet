@@ -25,7 +25,7 @@ class MessageHandler implements Runnable {
 		logger.setLevel(Level.FINEST);
 		while(true){
 			try{
-				Thread.sleep(1000);
+				Thread.sleep(100);
 			}catch(Exception ex){}
 			/* TODO Add data transfer cap or something maybe idk */
 			
@@ -64,31 +64,34 @@ class MessageHandler implements Runnable {
 							System.arraycopy(JJNetUtils.intToByteArray(ads.size()), 0, responseComp2, 1, 4);
 							System.arraycopy(responseComp, 0, responseComp2, 5, responseComp.length);
 							responseComp2[0]=Protocol.ARRP.value();
-							System.out.println("Response:"+new String(responseComp2));
 							p.send(responseComp2);
 						}else if(protocol==Protocol.ARRP){
 							int offset=0;
 							int adslength = JJNetUtils.byteArrayToInt(message,1);
-							System.out.println(adslength);
 							byte [] responseBytes = JJNetUtils.decompress(message,5);
-							System.out.println("Response:"+Arrays.toString(responseBytes));
 							int times=0;
-							
 							for(int i=0;i<adslength;i++){
 								times++;
 								int responseLength = JJNetUtils.byteArrayToInt(responseBytes,offset);
-								System.out.println(responseLength);
 								offset+=4;
 								String response = new String(Arrays.copyOfRange(responseBytes, offset, responseLength+offset), "UTF-8");
-								System.out.println(response);
 								Advertisement ad = (Advertisement) XML.parseUnsignedXML(response);
 								offset+=responseLength;
 								adService.add(ad);
 							}
-							
-							System.out.println("times"+times);
 						}else if(protocol==Protocol.PMP){
-							
+							/*TODO Peer multicast protocol*/
+						}else if(protocol==Protocol.PLRP){
+							pls.processMessage(p, message);
+						}else if(protocol==Protocol.PLRRP){
+							if(plb!=null && receivingPeerList && plb.p==p){
+								plb.processMessage(message);
+							}else{
+								byte[] response = new byte[2];
+								response[0] = Protocol.PLRP.value();
+								response[1] = PeerListBuilder.PLB_STOP;
+								p.send(response);
+							}
 						}
 						
 					}catch(Exception ex){

@@ -82,7 +82,6 @@ public class SimpleHttpClientPipe extends Pipe{
 	}
 	
 	public void queuePacket(byte[] packet){
-		System.out.println(getIPAddress());
 		queue.add(packet);
 	}
 

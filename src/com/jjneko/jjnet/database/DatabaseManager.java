@@ -39,15 +39,15 @@ public class DatabaseManager {
 			conn = ds.getConnection();
 			
 			if(isEmpty()){
-				System.out.println("Database empty! Creating new schema..");
+				//System.out.println("Database empty! Creating new schema..");
 				readSQLfile(new File("sqlfile.sql"));
 			}else{
 				loadToMemory();
 			}
 			
-			System.out.println("Database initialized!");
+			//System.out.println("Database initialized!");
 		} catch (Exception e) {
-			System.out.println("Database initialization failed!");
+			//System.out.println("Database initialization failed!");
 			e.printStackTrace();
 		}
 		
@@ -97,7 +97,7 @@ public class DatabaseManager {
 	                if(!inst[i].trim().equals(""))
 	                {
 	                    st.executeUpdate(inst[i]);
-	                    System.out.println(">>"+inst[i]);
+	                    //System.out.println(">>"+inst[i]);
 	                }
 	            }
 	   
@@ -124,7 +124,7 @@ public class DatabaseManager {
 			stmt2=conn.prepareStatement(sql2);
 			stmt3=conn.prepareStatement(sql3);
 
-			System.out.println(">> "+stmt1);
+			//System.out.println(">> "+stmt1);
 			ResultSet rs1 = stmt1.executeQuery();
 			while(rs1.next()){
 				String hash = new String(rs1.getBytes(1),"ISO-8859-1");
@@ -134,7 +134,7 @@ public class DatabaseManager {
 				advertisements.put(hash,valid);
 			}
 			
-			System.out.println(">> "+stmt2);
+			//System.out.println(">> "+stmt2);
 			ResultSet rs2 = stmt2.executeQuery();
 			while(rs2.next()){
 				String classs = rs2.getString(1);
@@ -142,7 +142,7 @@ public class DatabaseManager {
 				classes.put(classs,id);
 			}
 			
-			System.out.println(">> "+stmt3);
+			//System.out.println(">> "+stmt3);
 			stmt3.executeUpdate();
 		}catch(Exception ex){ex.printStackTrace();}
 		finally {
@@ -173,7 +173,7 @@ public class DatabaseManager {
 				stmt1.setBytes(1, hash.getBytes("ISO-8859-1"));
 				stmt1.setBytes(2, XML.toUnsignedXML(ad).getBytes("ISO-8859-1"));
 				
-				System.out.println(">> "+stmt1);
+				//System.out.println(">> "+stmt1);
 				stmt1.execute();
 								
 				ResultSet rs = stmt1.getGeneratedKeys();
@@ -194,7 +194,7 @@ public class DatabaseManager {
 					stmt2.setInt(1, id);
 					stmt2.setInt(2, classes.get(classs));
 					
-					System.out.println(">> "+stmt2);
+					//System.out.println(">> "+stmt2);
 					stmt2.execute();
 				}
 				
@@ -211,7 +211,7 @@ public class DatabaseManager {
 				}
 			}
 		}else{
-			System.out.println("ad already exists");
+			//System.out.println("ad already exists");
 			if(advertisements.get(hash) < ad.valid_until){
 				advertisements.put(hash, ad.valid_until);
 			}
@@ -232,13 +232,13 @@ public class DatabaseManager {
 			if(limit>0)
 			stmt1.setInt(2, limit);
 			
-			System.out.println(stmt1);
+			//System.out.println(stmt1);
 			ResultSet rs = stmt1.executeQuery();
 			
 			while(rs.next()){
 				Advertisement ad = (Advertisement) XML.parseUnsignedXML(new String(rs.getBytes(3),"ISO-8859-1"));
 				ads.add(ad);
-				System.out.println(ad);
+				//System.out.println(ad);
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
@@ -261,7 +261,7 @@ public class DatabaseManager {
 			stmt.setString(1, classs);
 			
 			
-			System.out.println(">> "+stmt);
+			//System.out.println(">> "+stmt);
 			stmt.execute();
 			
 			ResultSet rs = stmt.getGeneratedKeys();

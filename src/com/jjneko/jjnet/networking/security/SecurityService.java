@@ -69,6 +69,11 @@ public class SecurityService {
 		        ex.printStackTrace(System.err);
 		    }
 			
+			rand = SecureRandom.getInstance("SHA1PRNG");
+			rand.nextBytes(new byte[16]);
+			RESEED_THERSHOLD=Integer.parseInt(System.getProperty(
+					"jjneko.jjnet.security.reseedthreshold", (Integer.MAX_VALUE/2)+""));
+			
 			AEScipher = Cipher.getInstance("AES/CTR/NoPadding", BouncyCastleProvider.PROVIDER_NAME);
 			AESgenerator = KeyGenerator.getInstance("AES","BC");
 			
@@ -85,10 +90,7 @@ public class SecurityService {
 			KeyPair kp = rsaKpg.genKeyPair();
 			CIPHER_LENGTH = rsaEncrypt("", kp.getPrivate()).length();
 			
-			rand = SecureRandom.getInstance("SHA1PRNG");
-			rand.nextBytes(new byte[16]);
-			RESEED_THERSHOLD=Integer.parseInt(System.getProperty(
-					"jjneko.jjnet.security.reseedthreshold", (Integer.MAX_VALUE/2)+""));
+			
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 			System.exit(0);

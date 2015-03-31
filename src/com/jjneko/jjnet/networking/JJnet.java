@@ -49,8 +49,8 @@ public class JJnet {
 	static String seedAddress;
 	static int seedPort;
 	static ConnectionType seedType;
-	static boolean useHttp = true, useUdp = true, useUPnP = true, useNATPmP = true;
-	static int HttpPort=-1, UDPPort=-1;
+	static boolean useHttp = true, useTcp = true, useStun=false, useUPnP = true, useNATPmP = true;
+	static int HttpPort=-1, TcpPort=-1;
 	static ConcurrentLinkedQueue<Pipe> pipes = new ConcurrentLinkedQueue<Pipe>();
 	static Thread msgHandler;
 	static boolean running = false;
@@ -64,17 +64,17 @@ public class JJnet {
 	static PeerListBuilder plb = null;
 	static PeerListSender pls = null;
 	
-	public static void init(String seedAddress, int seedPort, ConnectionType seedType, boolean useHttp, boolean useUdp, boolean useUPnP, boolean useNATPnP){
+	public static void init(String seedAddress, int seedPort, ConnectionType seedType, boolean useHttp, boolean useUdp,boolean useStun, boolean useUPnP, boolean useNATPnP){
 		JJnet.seedAddress=seedAddress;
 		JJnet.seedPort=seedPort;
 		JJnet.seedType=seedType;
-		init(useHttp, useUdp, useUPnP, useNATPnP);
+		init(useHttp, useUdp, useStun, useUPnP, useNATPnP);
 	}
 	
-	public static void initAsSeed(boolean useHttp, boolean useUdp, boolean useUPnP, boolean useNATPnP, int HttpPort, int UdpPort){
+	public static void initAsSeed(boolean useHttp, boolean useTcp, boolean useStun, boolean useUPnP, boolean useNATPnP, int HttpPort, int UdpPort){
 		JJnet.HttpPort=HttpPort;
-		JJnet.UDPPort=UdpPort;
-		init(useHttp, useUdp, useUPnP, useNATPnP);
+		JJnet.TcpPort=UdpPort;
+		init(useHttp, useTcp, useStun, useUPnP, useNATPnP);
 		worldGroup = new WorldGroup(localEndPointAddress);
 		worldGroup.addMember(localEndPointAddress);
 		WorldGroupAdvertisement wgad = new WorldGroupAdvertisement(worldGroup.owner,true,worldGroup.getMemberCount());
@@ -87,11 +87,12 @@ public class JJnet {
 		JJnet.seedType=seedType;
 	}
 	
-	public static void init(boolean useHttp, boolean useUdp, boolean useUPnP, boolean useNATPmP){
+	public static void init(boolean useHttp, boolean useTcp, boolean useStun, boolean useUPnP, boolean useNATPmP){
 		JJnet.useHttp=useHttp;
-		JJnet.useUdp=useUdp;
+		JJnet.useTcp=useTcp;
 		JJnet.useUPnP=useUPnP;
 		JJnet.useNATPmP=useNATPmP;
+		JJnet.useStun=useStun;
 		setDatabase(new DatabaseManager());
 		
 		KeyPair kp = SecurityService.generateRSAKeyPair();
@@ -132,6 +133,11 @@ public class JJnet {
 		pipes.remove(pipe);
 	}
 	
+	public static Long currentTimeMillis(){
+		//TODO Time sync protocol
+		return System.currentTimeMillis();
+	}
+	
 	
 	
 	
@@ -151,32 +157,20 @@ public class JJnet {
 		return pipes;
 	}
 
-	public static EndPoint newPeerProtocol(String endpoint, String publicKey, long timestamp, String hashedStamp ){
+	static void newPeerProtocol(Pipe p, byte[] msg){
 		try{
-//			Long currtime = System.currentTimeMillis();
-//			if(currtime-timestamp>TIMESTAMP_VALID){
-//				throw new Exception("Timestamp too old!");
-//			}
-//			PublicKey pbk = SecurityService.parsePublicKey(publicKey);
-//			Long hashStamp = Long.parseLong(new String(SecurityService.rsaDecrypt(hashedStamp.getBytes(), pbk)));
-//			if(hashStamp!=timestamp){
-//				log.info("timestamp: " + timestamp + " decrypted timestamp: "+ hashStamp);
-//				throw new Exception("Hashed timestamp did not match given timestamp");
-//			}
-//			if(!endpoint.equals(SecurityService.MD5HashtoHex(publicKey, EndPoint.ENDPOINT_ADDRESS_LENGTH))){
-//				log.info("endpoint: " + endpoint + " public key hash: "+ 
-//						SecurityService.MD5HashtoHex(publicKey, EndPoint.ENDPOINT_ADDRESS_LENGTH));
-//				throw new Exception("Endpoint name does not match public key hash!");
-//			}
-			
-			/* TODO New peer protocol*/
+			if(worldGroup.owner.equals(localEndPointAddress)){
+				String keystring = new String(Arrays.copyOfRange(msg, 1, msg.length), "ISO-8859-1");
+				PublicKey key = SecurityService.parsePublicKey(keystring);
+				EndPoint newPoint= new EndPoint(key);
+				if(!worldGroup.containsMember(newPoint)){
+					worldGroup.addMember(newPoint);
+					worldGroup.broadcast(msg);
+				}
+			}
 		}catch(Exception ex){
 			log.severe("NewPeerProtocol failed: "+ ex.getStackTrace());
-			return null;
 		}
-		
-		
-		return null;
 	}
 	
 	
@@ -225,6 +219,7 @@ public class JJnet {
 		return worldGroup;
 	}
 
+
 	private static class NetworkInitializer implements Runnable{
 		
 		@Override
@@ -237,11 +232,12 @@ public class JJnet {
 					e.printStackTrace();
 				}
 			}
-			if(useUdp){
+			if(useTcp){
+				//TODO TCP server
+			}
+			if(useStun){
 				try {
-					udps = new UDPService(UDPPort);
 					stuns = new StunServer();
-					udps.start();
 					stuns.start();
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -262,7 +258,7 @@ public class JJnet {
 					if(seedType==ConnectionType.HTTP){
 						pipe = new SimpleHttpClientPipe(InetAddress.getByName(seedAddress), seedPort);
 						pipe.connect();
-					}else if(seedType==ConnectionType.UDP){
+					}else if(seedType==ConnectionType.TCP){
 						
 					}
 				} catch (Exception e) {
@@ -284,7 +280,19 @@ public class JJnet {
 						break;
 					}catch(Exception ex){}
 				}
+				
 				fetchWorldPeerList();
+				
+				byte[] pubkey=null;
+				try {
+					pubkey = SecurityService.publicKeytoString(localEndPointAddress.getKey()).getBytes("ISO-8859-1");
+				} catch (UnsupportedEncodingException e) {
+					e.printStackTrace();
+				}
+				byte[] peerProto = new byte[pubkey.length+1];
+				peerProto[0]=Protocol.NPP.value();
+				System.arraycopy(pubkey, 0, peerProto, 1, pubkey.length);
+				pipes.peek().send(peerProto);
 			}
 			
 			pls = new PeerListSender();
@@ -310,14 +318,14 @@ public class JJnet {
 			PLB_STOP=8;
 		
 		public PeerListBuilder(Pipe p){
-			startTime=System.currentTimeMillis();
+			startTime=JJnet.currentTimeMillis();
 			this.p=p;
 		}
 		
 		private boolean approved=false;
 		private boolean receiving=false;
 		public void processMessage(byte[] msg) throws JJNetException, InvalidKeySpecException, UnsupportedEncodingException, ParseException{
-			if(System.currentTimeMillis()>startTime+PLB_TIMEOUT){
+			if(JJnet.currentTimeMillis()>startTime+PLB_TIMEOUT){
 				throw new JJNetException("Peerlist request timed out");
 			}
 			if(!approved){
@@ -348,6 +356,10 @@ public class JJnet {
 					PublicKey key = SecurityService.parsePublicKey(new String(subArray,"ISO-8859-1"));
 					worldGroup.addMember(new EndPoint(key));
 					receivedCount++;
+					if(bytesInKey==0){
+						sendStart=JJnet.currentTimeMillis();
+						bytesInKey=subArray.length;
+					}
 					if(receivedCount>listLength){
 						finalizePLB();
 					}
@@ -355,11 +367,19 @@ public class JJnet {
 			}
 		}
 		
+		long sendStart=0;
+		int bytesInKey=0;
 		private void finalizePLB() {
 			receiving=false;
 			receivingPeerList=false;
 			plb=null;
 			System.out.println("Peerlist receiving done!");
+			float tookTime= (float)(JJnet.currentTimeMillis()-sendStart)/1000.0f;
+			long amountOfBytes=bytesInKey*receivedCount;
+			
+			//TODO Can use this as speed limiter
+			int bytesPerSecond = (int)(amountOfBytes/tookTime);
+			System.out.println("BytesPerSecond was "+ bytesPerSecond);
 		}
 	}
 	
@@ -468,7 +488,6 @@ public class JJnet {
 						msg[1] = PLB_KEY;
 						System.arraycopy(key, 0, msg, 2, key.length);
 						p.send(msg);
-						Thread.sleep(10);
 					}catch(Exception ex){
 						ex.printStackTrace();
 					}
@@ -485,6 +504,5 @@ public class JJnet {
 		}
 	}
 
-	
 
 }

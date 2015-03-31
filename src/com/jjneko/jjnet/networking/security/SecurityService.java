@@ -47,6 +47,7 @@ public class SecurityService {
 
 	// private static MessageDigest Blakehasher;
 	public static final int HASH_MAX_LENGTH = 64;
+	public static final int PACKET_ID_LENGTH = Integer.BYTES; //java.lang.Integer.BYTES
 	public static int BLOCK_SIZE = 128;
 	public static int CIPHER_LENGTH = 128;
 	private static SecureRandom rand;
@@ -57,6 +58,7 @@ public class SecurityService {
 	private static KeyPairGenerator rsaKpg;
 	private static KeyGenerator AESgenerator;
 	private static int RESEED_THERSHOLD=0;
+	private static byte[] packetid = new byte[PACKET_ID_LENGTH];
 
 	static {
 		try {
@@ -251,6 +253,13 @@ public class SecurityService {
 		Blakehasher.update(data);
 		byte[] hash = new byte[length];
 		System.arraycopy(Blakehasher.digest(), 0, hash, 0, length);
+		return hash;
+	}
+	
+	public static byte[] hash(byte[] data, int dataOff, int dataLen, int hashLength) {
+		Blakehasher.update(data,dataOff,dataLen);
+		byte[] hash = new byte[hashLength];
+		System.arraycopy(Blakehasher.digest(), 0, hash, 0, hashLength);
 		return hash;
 	}
 
@@ -452,5 +461,10 @@ public class SecurityService {
 	public static void setRandomGenerator(SecureRandom rand) {
 		SecurityService.rand = rand;
 		generatedCount=0;
+	}
+	
+	public synchronized static void getRandomPacketID(byte[] dest, int offset){
+		rand.nextBytes(packetid);
+		System.arraycopy(packetid, 0, dest, offset, PACKET_ID_LENGTH);
 	}
 }

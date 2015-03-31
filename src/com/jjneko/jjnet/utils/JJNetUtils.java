@@ -3,7 +3,9 @@ package com.jjneko.jjnet.utils;
 import java.net.DatagramSocket;
 import java.net.ServerSocket;
 import java.nio.BufferOverflowException;
+import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.jjneko.jjnet.networking.JJnet;
 
@@ -16,6 +18,33 @@ public class JJNetUtils {
 	static LZ4Factory factory = LZ4Factory.fastestInstance();
 	static LZ4Compressor compressor = factory.fastCompressor();
 	static LZ4FastDecompressor decompressor = factory.fastDecompressor();
+	
+	private static ByteBuffer longbuffer = ByteBuffer.allocate(Long.BYTES);
+	private static ReentrantLock bufferLock = new ReentrantLock();
+
+    public static void longToBytes(long x, byte[] dest, int offset) {
+    	bufferLock.lock();
+    	try{
+    		longbuffer.clear();
+	        longbuffer.putLong(0, x);
+	        System.arraycopy(longbuffer.array(), 0, dest, offset, Long.BYTES);
+	        
+    	}finally{
+    		bufferLock.unlock();
+    	}
+    }
+
+    public static long bytesToLong(byte[] src, int offset) {
+    	bufferLock.lock();
+    	try{
+    		longbuffer.clear();
+	        longbuffer.put(src, offset, Long.BYTES);
+	        longbuffer.flip();
+	        return longbuffer.getLong();
+    	}finally{
+    		bufferLock.unlock();
+    	}
+    }
 	
 	
 	public static int byteArrayToInt(byte[] b) 

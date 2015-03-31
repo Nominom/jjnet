@@ -56,11 +56,11 @@ public enum Protocol {
 	 */
 	ARP((byte)6),
 	/**
-	 * PEER MULTICAST PROTOCOL<br/>
+	 * PEER WORLD GROUP MULTICAST PROTOCOL<br/>
 	 * Used for multicasting messages to all peers in worldgroup
 	 * 0b0000 0111
 	 */
-	PMP((byte)7),
+	PWGMP((byte)7),
 	/**
 	 * ADVERTISEMENT REQUEST RESPONSE PROTOCOL<br/>
 	 * Used for responding to advertisement requests<br/>

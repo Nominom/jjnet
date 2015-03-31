@@ -1,6 +1,7 @@
 package com.jjneko.jjnet.networking;
 
 import static com.jjneko.jjnet.networking.JJnet.*;
+import static com.jjneko.jjnet.networking.security.SecurityService.*;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -8,14 +9,16 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.jjneko.jjnet.messaging.BroadcastMessage;
 import com.jjneko.jjnet.messaging.XML;
 import com.jjneko.jjnet.networking.discovery.Advertisement;
 import com.jjneko.jjnet.networking.pipes.Pipe;
+import com.jjneko.jjnet.networking.security.SecurityService;
 import com.jjneko.jjnet.utils.JJNetUtils;
 
 class MessageHandler implements Runnable {
 	
-	Logger logger = Logger.getLogger(MessageHandler.class.getName());
+	static Logger logger = Logger.getLogger(MessageHandler.class.getName());
 	
 	/*TODO A LOT of optimizing*/
 	
@@ -25,7 +28,7 @@ class MessageHandler implements Runnable {
 		logger.setLevel(Level.FINEST);
 		while(true){
 			try{
-				Thread.sleep(100);
+//				Thread.sleep(100);
 			}catch(Exception ex){}
 			/* TODO Add data transfer cap or something maybe idk */
 			
@@ -79,8 +82,41 @@ class MessageHandler implements Runnable {
 								offset+=responseLength;
 								adService.add(ad);
 							}
-						}else if(protocol==Protocol.PMP){
-							/*TODO Peer multicast protocol*/
+						}else if(protocol==Protocol.PWGMP){
+							
+//							byte[] bcastmsg = new byte[1+								//Protocol
+//							                           SecurityService.PACKET_ID_LENGTH+//Packet id
+//							                           EndPoint.ENDPOINT_ADDRESS_LENGTH+//Source addr
+//							                           Long.BYTES+						//timestamp
+//							                           Integer.BYTES+					//Message length as int
+//							                           msg.length+						//Message
+//							                           SecurityService.CIPHER_LENGTH	//Signed hash of everything else
+//							                           ];
+							byte[] sourceBytes = new byte[EndPoint.ENDPOINT_ADDRESS_LENGTH];
+							System.arraycopy(message, 1+PACKET_ID_LENGTH, sourceBytes, 0, EndPoint.ENDPOINT_ADDRESS_LENGTH);
+							EndPoint src = worldGroup.getMemberByAddr(new String(sourceBytes,"ISO-8859-1"));
+							
+							byte[] mac = new byte[SecurityService.CIPHER_LENGTH];
+							System.arraycopy(message, message.length-CIPHER_LENGTH, mac, 0, CIPHER_LENGTH);
+							
+							byte[] machash = SecurityService.rsaDecrypt(mac, src.getKey());
+							byte[] hash = SecurityService.hash(message, 0, message.length-CIPHER_LENGTH, SecurityService.HASH_MAX_LENGTH);
+							
+							if(Arrays.equals(hash, machash)){
+								int packetId=JJNetUtils.byteArrayToInt(message, 1);
+								long timestamp=JJNetUtils.bytesToLong(message, 1+SecurityService.PACKET_ID_LENGTH+EndPoint.ENDPOINT_ADDRESS_LENGTH);
+								int msgLength = JJNetUtils.byteArrayToInt(message, 1+SecurityService.PACKET_ID_LENGTH+EndPoint.ENDPOINT_ADDRESS_LENGTH+Long.BYTES);
+								byte[] msg = new byte[msgLength];
+								System.arraycopy(message, 1+SecurityService.PACKET_ID_LENGTH+EndPoint.ENDPOINT_ADDRESS_LENGTH+Long.BYTES+Integer.BYTES,
+										msg, 0, msgLength);
+								BroadcastMessage bcastmsg = new BroadcastMessage(timestamp,src,msg);
+								
+								if(Routing.Route(p, src.getAddress(), null, protocol, timestamp, packetId, message)){
+									JJnet.worldGroup.receiveBroadcast(bcastmsg);
+								}
+							}else{
+								System.out.println("hashes did not match! dropping packet!");
+							}
 						}else if(protocol==Protocol.PLRP){
 							pls.processMessage(p, message);
 						}else if(protocol==Protocol.PLRRP){
@@ -92,6 +128,8 @@ class MessageHandler implements Runnable {
 								response[1] = PeerListBuilder.PLB_STOP;
 								p.send(response);
 							}
+						}else if(protocol==Protocol.NPP){
+							newPeerProtocol(p, message);
 						}
 						
 					}catch(Exception ex){

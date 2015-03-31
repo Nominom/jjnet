@@ -21,7 +21,7 @@ public class UDPService {
 	}
 	
 	public void start() throws SocketException{
-		logger.info("Starting UDP Listening port in port "+serverport);
+		logger.info("Starting TCP Listening port in port "+serverport);
 		if(serverport==-1){
 			socket=new DatagramSocket();
 			serverport=socket.getLocalPort();
@@ -30,12 +30,12 @@ public class UDPService {
 		server=new UDPServer(socket);
 		packetHandler = new Thread(server);
 		packetHandler.start();
-		logger.info("Now listening UDP requests on "+serverport);
+		logger.info("Now listening TCP requests on "+serverport);
 	}
 
 	
 	/**
-	 * @return the port this UDP server is running on
+	 * @return the port this TCP server is running on
 	 */
 	public int getServerPort() {
 		return serverport;

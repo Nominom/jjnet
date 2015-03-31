@@ -30,19 +30,18 @@ package com.jjneko.jjnet.networking.stun;
 
 
 import java.io.IOException;
-
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
-
 import java.nio.channels.DatagramChannel;
 import java.nio.ByteBuffer;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import com.jjneko.jjnet.networking.JJnet;
 
 public class StunClient extends Thread {
 
@@ -63,7 +62,7 @@ public class StunClient extends Thread {
 	private boolean done;
 
 	/*
-	 * Communicate with the stunServer using UDP
+	 * Communicate with the stunServer using TCP
 	 */
 	public StunClient(InetSocketAddress stunServer,
 			DatagramSocket datagramSocket) throws IOException {
@@ -215,7 +214,7 @@ public class StunClient extends Thread {
 		buf[3] = (byte) StunHeader.TLV_LENGTH
 				+ StunHeader.MAPPED_ADDRESS_LENGTH;
 
-		long time = System.currentTimeMillis();
+		long time = JJnet.currentTimeMillis();
 
 		for (int i = 0; i < 16; i++) {
 			buf[i + 4] = (byte) (time >> ((i % 4) * 8));

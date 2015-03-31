@@ -7,12 +7,12 @@ import com.jjneko.jjnet.networking.security.SecurityService;
 public class EndPoint {
 	
 	
-	public static final int ENDPOINT_ADDRESS_LENGTH = 16;
+	public static final int ENDPOINT_ADDRESS_LENGTH = 8;
 	
 	private String address;
 	private PublicKey key;
 	
-	private EndPoint(String address, PublicKey key) {
+	public EndPoint(String address, PublicKey key) {
 		this.setAddress(address);
 		this.setKey(key);
 	}
@@ -31,7 +31,7 @@ public class EndPoint {
 	/**
 	 * @param address the address to set
 	 */
-	private void setAddress(String address) {
+	public void setAddress(String address) {
 		this.address = address;
 	}
 
@@ -45,7 +45,7 @@ public class EndPoint {
 	/**
 	 * @param key the key to set
 	 */
-	private void setKey(PublicKey key) {
+	public void setKey(PublicKey key) {
 		this.key = key;
 	}
 	

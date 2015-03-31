@@ -15,11 +15,7 @@ public abstract class Pipe {
 	public Pipe(Runnable handshake){
 		this.handshake=handshake;
 	}
-	
-	public Pipe(){
-		
-	}
-	
+
 	public abstract void send(byte[] message);
 	
 	public abstract byte[] receive();
@@ -56,6 +52,6 @@ public abstract class Pipe {
 	 * @return returns the pipe's ip address as a string
 	 */
 	public abstract String getIPAddress();
-	
+		
 
 }

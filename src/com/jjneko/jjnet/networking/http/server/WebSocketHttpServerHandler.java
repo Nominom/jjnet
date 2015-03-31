@@ -149,8 +149,6 @@ public class WebSocketHttpServerHandler extends SimpleChannelInboundHandler<Obje
 	        		newpipe.connect();
 	        		newpipe.queuePacket(request.getBytes("ISO-8859-1"));
 	        		pipes.put(id, newpipe);
-	        	}else if(request.startsWith(Protocol.NPP.toChar()+"")){
-	
 	        	}
 	        }
     	}catch(Exception ex){

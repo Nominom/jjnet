@@ -21,9 +21,9 @@ public class Tester3 {
             // the responsibility of shutting it down yourself. Refer to the
             // constructor documentation for the details. In this case, we'll
             // let it shut down with the JVM.
-        	System.out.println("Getting NAT PMP device...");
+        	System.out.println("Getting NAT PWGMP device...");
             pmpDevice = new NatPmpDevice(true);
-            System.out.println("PMP device found");
+            System.out.println("PWGMP device found");
             // The next step is always to determine the external address of
             // the device. This is done by constructing the request message
             // and enqueueing it.

@@ -32,7 +32,7 @@ import com.jjneko.jjnet.networking.upnp.UPnPService;
 public class Tester {
 	
 	public static void main(String[] args) throws UnknownHostException{
-		JJnet.initAsSeed(true,true,false,false,7555,7556);
+		JJnet.initAsSeed(true,true,true,false,false,7555,7556);
 //		
 //		try {
 //			KeyPair kp = SecurityService.generateRSAKeyPair();
@@ -125,11 +125,11 @@ public class Tester {
 		try{
 //			upnp.start();
 //			int extHttpPort = upnp.mapPort(https.getServerPort(), "TCP", "http server");
-//			int extSTUNPort = upnp.mapPort(stun.stunServerPort, "UDP", "STUN server");
-//			int extUDPPort = upnp.mapPort(udp.getServerPort(), "UDP", "UDP server");
+//			int extSTUNPort = upnp.mapPort(stun.stunServerPort, "TCP", "STUN server");
+//			int extUDPPort = upnp.mapPort(udp.getServerPort(), "TCP", "TCP server");
 //			System.out.println("External HTTP port: "+ extHttpPort);
 //			System.out.println("External STUN port: "+ extSTUNPort);
-//			System.out.println("External UDP port: "+ extUDPPort);
+//			System.out.println("External TCP port: "+ extUDPPort);
 //
 //			
 //			Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -172,22 +172,22 @@ public class Tester {
 		JJnet.getAdvertisementService().publish(ad3);
 		JJnet.getAdvertisementService().publish(ad4);
 		
-		long beforeTime= System.nanoTime();
-		for(int i=0;i<10;i++){
-			beforeTime= System.nanoTime();
-			JJnet.getWorldGroup().addMember(new EndPoint(SecurityService.generateRSAKeyPair().getPublic()));
-			System.out.println("keygen took "+(float)(System.nanoTime()-beforeTime)/1000000f+"ms");
-		}
+//		long beforeTime= System.nanoTime();
+//		for(int i=0;i<5;i++){
+//			beforeTime= System.nanoTime();
+//			JJnet.getWorldGroup().addMember(new EndPoint(SecurityService.generateRSAKeyPair().getPublic()));
+//			System.out.println("keygen took "+(float)(System.nanoTime()-beforeTime)/1000000f+"ms");
+//		}
 		
-		for(int i=0;i<200;i++){
-			try {
-				Thread.sleep(20000);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class,2);
-		}
+//		for(int i=0;i<200;i++){
+//			try {
+//				Thread.sleep(20000);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
+//			
+//			JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class,2);
+//		}
 	}
 
 }

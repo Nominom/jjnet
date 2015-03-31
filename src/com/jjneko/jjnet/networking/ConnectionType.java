@@ -11,10 +11,10 @@ public enum ConnectionType {
 	 */
 	HTTP((byte)0),
 	/**
-	 * Connection using UDP
+	 * Connection using TCP
 	 * 0b0000 0001
 	 */
-	UDP((byte)1);
+	TCP((byte)1);
 	 
 	private byte value;
 	

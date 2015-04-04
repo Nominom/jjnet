@@ -73,28 +73,28 @@ public class Tester {
 //		
 //		
 //		HttpService https = new HttpService(7555);
-//		UDPService udp = new UDPService(7656);
+//		UDPService tcp = new UDPService(7656);
 //		final UPnPService upnp = new UPnPService();	
 //		StunServer stun = new StunServer();
 //
 //		
 //		try {
 //			https.start();
-//			udp.start();
+//			tcp.start();
 //			stun.start();
 //		} catch (Exception e) {
 //			e.printStackTrace();
 //		}
 //		
 //		NodeAdvertisement ad = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
-//				https.getServerPort(), udp.getServerPort(), stun.stunServerPort);
+//				https.getServerPort(), tcp.getServerPort(), stun.stunServerPort);
 //		try {
 //			Thread.sleep(10);
 //		} catch (InterruptedException e1) {
 //			e1.printStackTrace();
 //		}
 //		NodeAdvertisement add = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
-//				https.getServerPort(), udp.getServerPort(), stun.stunServerPort);
+//				https.getServerPort(), tcp.getServerPort(), stun.stunServerPort);
 //		
 //		System.out.println(ad);
 //		
@@ -126,7 +126,7 @@ public class Tester {
 //			upnp.start();
 //			int extHttpPort = upnp.mapPort(https.getServerPort(), "TCP", "http server");
 //			int extSTUNPort = upnp.mapPort(stun.stunServerPort, "TCP", "STUN server");
-//			int extUDPPort = upnp.mapPort(udp.getServerPort(), "TCP", "TCP server");
+//			int extUDPPort = upnp.mapPort(tcp.getServerPort(), "TCP", "TCP server");
 //			System.out.println("External HTTP port: "+ extHttpPort);
 //			System.out.println("External STUN port: "+ extSTUNPort);
 //			System.out.println("External TCP port: "+ extUDPPort);
@@ -156,38 +156,7 @@ public class Tester {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		ArrayList<Advertisement> ads = JJnet.getAdvertisementService().fetchLocal(WorldGroupAdvertisement.class);
-		
-		NodeAdvertisement ad = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
-		0, 0, 0);
-		NodeAdvertisement ad2 = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
-				0, 0, 354);
-		NodeAdvertisement ad3 = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
-				0, 354, 0);
-		NodeAdvertisement ad4 = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), true, true, true,
-				354, 0, 0);
-		
-		JJnet.getAdvertisementService().publish(ad);
-		JJnet.getAdvertisementService().publish(ad2);
-		JJnet.getAdvertisementService().publish(ad3);
-		JJnet.getAdvertisementService().publish(ad4);
-		
-//		long beforeTime= System.nanoTime();
-//		for(int i=0;i<5;i++){
-//			beforeTime= System.nanoTime();
-//			JJnet.getWorldGroup().addMember(new EndPoint(SecurityService.generateRSAKeyPair().getPublic()));
-//			System.out.println("keygen took "+(float)(System.nanoTime()-beforeTime)/1000000f+"ms");
-//		}
-		
-//		for(int i=0;i<200;i++){
-//			try {
-//				Thread.sleep(20000);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
-//			
-//			JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class,2);
-//		}
+
 	}
 
 }

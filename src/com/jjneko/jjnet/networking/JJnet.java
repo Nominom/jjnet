@@ -3,22 +3,22 @@ package com.jjneko.jjnet.networking;
 import gnu.trove.iterator.TObjectByteIterator;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectByteHashMap;
-import gnu.trove.set.hash.THashSet;
-
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.spec.InvalidKeySpecException;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.logging.Logger;
 
 import com.jjneko.jjnet.database.DatabaseManager;
+import com.jjneko.jjnet.networking.discovery.Advertisement;
 import com.jjneko.jjnet.networking.discovery.AdvertisementService;
+import com.jjneko.jjnet.networking.discovery.NodeAdvertisement;
 import com.jjneko.jjnet.networking.discovery.WorldGroupAdvertisement;
 import com.jjneko.jjnet.networking.http.HttpService;
 import com.jjneko.jjnet.networking.pipes.Pipe;
@@ -42,7 +42,7 @@ public class JJnet {
 	public static PublicKey publicKey=null;
 	public static EndPoint localEndPointAddress=null;
 	static DatabaseManager database = null;
-	static int minNeighbours=1;
+	static int minNeighbours=2;
 	static int maxNeighbours=5;
 	public static NATType natType = NATType.UNSPECIFIED;
 	public static int natDelta = 0;
@@ -63,6 +63,7 @@ public class JJnet {
 	static boolean receivingPeerList=false;
 	static PeerListBuilder plb = null;
 	static PeerListSender pls = null;
+	static Thread maintT;
 	
 	public static void init(String seedAddress, int seedPort, ConnectionType seedType, boolean useHttp, boolean useUdp,boolean useStun, boolean useUPnP, boolean useNATPnP){
 		JJnet.seedAddress=seedAddress;
@@ -112,10 +113,15 @@ public class JJnet {
 	public synchronized static void start(){
 		if(running)
 			return;
+		running=true;
 		msgHandler = new Thread(new MessageHandler());
 		msgHandler.start();
+		msgHandler.setPriority(Thread.NORM_PRIORITY-2);
+		
 		new Thread(new NetworkInitializer()).start();
-		running=true;
+		maintT = new Thread(new maintenanceThread());
+		maintT.setPriority(Thread.MIN_PRIORITY);
+		maintT.start();
 	}
 	
 	public synchronized static void stop(){
@@ -218,6 +224,16 @@ public class JJnet {
 	public static WorldGroup getWorldGroup() {
 		return worldGroup;
 	}
+	
+	public static String getLocalIp(){
+		//TODO internet facing ip
+		try {
+			return InetAddress.getLocalHost().getHostAddress();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
+		return "";
+	}
 
 
 	private static class NetworkInitializer implements Runnable{
@@ -296,6 +312,16 @@ public class JJnet {
 			}
 			
 			pls = new PeerListSender();
+			
+			
+			try {
+				//TODO change to actual internet facing ip and real tcp port
+				NodeAdvertisement ad = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), useHttp, useTcp, useStun, useHttp? https.getServerPort() : 0, useTcp? 0 : 0 , useStun? stuns.stunServerPort : 0);
+				getAdvertisementService().publish(ad);
+			}catch(Exception ex){
+				ex.printStackTrace();
+			}
+
 
 			System.out.println("initialized");
 		}
@@ -502,6 +528,55 @@ public class JJnet {
 				recepients.put(p,PLB_END);
 			}
 		}
+	}
+	
+	
+	static class maintenanceThread implements Runnable{
+
+		@Override
+		public void run() {
+			try{
+				Thread.sleep(20*1000);
+			}catch(InterruptedException ex){}
+			while(running){
+				try{
+					System.err.println("Running maintenace");
+					pls.cleanPLS();
+					JJnet.getAdvertisementService().fetchRemote(NodeAdvertisement.class,1);
+					
+					if(pipes.size()<minNeighbours){
+						for(Advertisement ad : JJnet.getAdvertisementService().fetchLocal(NodeAdvertisement.class, minNeighbours-pipes.size())){
+							NodeAdvertisement nad = (NodeAdvertisement) ad;
+							if(nad.http){
+								boolean alreadyConnected=false;
+								if(nad.ipAddress.equals(getLocalIp())){
+									alreadyConnected=true;
+									continue;
+								}
+								for(Pipe p : pipes){
+									if(p.getIPAddress().equals(nad.ipAddress)){
+										alreadyConnected=true;
+									}
+								}
+								
+								if(!alreadyConnected){
+									Pipe pipe = new SimpleHttpClientPipe(InetAddress.getByName(nad.ipAddress), nad.httpPort);
+									pipe.connect();
+								}
+							}
+						}
+					}
+					System.err.println("Maintenance complete");
+				}catch(Exception ex)
+				{ex.printStackTrace();}
+				finally{
+					try{
+						Thread.sleep(60*1000);
+					}catch(InterruptedException ex){}
+				}
+			}
+		}
+		
 	}
 
 

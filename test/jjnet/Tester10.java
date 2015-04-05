@@ -1,5 +1,6 @@
 package jjnet;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -13,7 +14,7 @@ public class Tester10 {
 	
 	public static void main(String[] args){
 		try {
-			DatagramSocket socket1 = new DatagramSocket();
+			final DatagramSocket socket1 = new DatagramSocket();
 			DatagramSocket socket2 = new DatagramSocket();
 			
 			
@@ -50,6 +51,7 @@ public class Tester10 {
 					System.out.println("received packet! :"+ new String(pack.getData()));
 					connected=true;
 					System.out.println("connected!");
+					throw new SocketTimeoutException();
 				}catch(SocketTimeoutException ex){
 					pack.setData("Hello".getBytes());
 					pack.setLength(5);
@@ -59,6 +61,33 @@ public class Tester10 {
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
+			}
+			
+			socket1.setSoTimeout(0);
+			
+			new Thread(new Runnable(){
+
+				@Override
+				public void run() {
+					DatagramPacket packs = new DatagramPacket(new byte[1024], 1024);
+					while(true){
+						try {
+							socket1.receive(packs);
+							System.out.println("received packet! :"+ new String(packs.getData()));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+				}}).start();
+			
+			for(int i=0;i<200000;i++){
+				pack.setData("keepalive".getBytes());
+				pack.setLength("keepalive".getBytes().length);
+				pack.setSocketAddress(receiver);
+				socket1.send(pack);
+				try{
+					Thread.sleep(20000);
+				}catch(Exception ex){};
 			}
 			
 			socket1.close();

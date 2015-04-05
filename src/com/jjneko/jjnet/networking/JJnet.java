@@ -278,6 +278,10 @@ public class JJnet {
 				try {
 					uPnPs = new UPnPService();
 					uPnPs.start();
+					int extPort = uPnPs.mapPort(7555, "TCP", "JJnet HTTP");
+					int extStunPort = uPnPs.mapPort(stuns.stunServerPort, "UDP", "STUN");
+					System.out.println("Port mapped ext: "+extPort);
+					System.out.println("Stun port mapped ext: "+extStunPort);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}

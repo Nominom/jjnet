@@ -1,9 +1,11 @@
 package jjnet;
 
+import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketException;
+import java.net.SocketTimeoutException;
+import java.util.Scanner;
 
 import com.jjneko.jjnet.networking.stun.StunClient;
 
@@ -26,6 +28,38 @@ public class Tester10 {
 			
 			System.out.println(out1);
 			System.out.println(out2);
+			
+			System.out.println("Input ip: ");
+			
+			Scanner s = new Scanner(System.in);
+			
+			String ip = s.nextLine();
+			
+			System.out.println("Input port: ");
+			
+			int port = Integer.parseInt(s.nextLine());
+			
+			boolean connected=false;
+			DatagramPacket pack = new DatagramPacket(new byte[1024], 1024);
+			InetSocketAddress receiver = new InetSocketAddress(ip,port);
+			socket1.setSoTimeout(1000);
+			while(!connected){
+				try{
+					pack = new DatagramPacket(new byte[1024], 1024);
+					socket1.receive(pack);
+					System.out.println("received packet! :"+ new String(pack.getData()));
+					connected=true;
+					System.out.println("connected!");
+				}catch(SocketTimeoutException ex){
+					pack.setData("Hello".getBytes());
+					pack.setLength(5);
+					pack.setSocketAddress(receiver);
+					socket1.send(pack);
+					System.out.println("sent hello!");
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
+			}
 			
 			socket1.close();
 			socket2.close();

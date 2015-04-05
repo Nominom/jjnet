@@ -3,8 +3,12 @@ package com.jjneko.jjnet.networking;
 import gnu.trove.iterator.TObjectByteIterator;
 import gnu.trove.map.hash.THashMap;
 import gnu.trove.map.hash.TObjectByteHashMap;
+import gnu.trove.map.hash.TObjectLongHashMap;
+
 import java.io.UnsupportedEncodingException;
+import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 import java.security.KeyPair;
 import java.security.PrivateKey;
@@ -24,6 +28,7 @@ import com.jjneko.jjnet.networking.http.HttpService;
 import com.jjneko.jjnet.networking.pipes.Pipe;
 import com.jjneko.jjnet.networking.pipes.http.SimpleHttpClientPipe;
 import com.jjneko.jjnet.networking.security.SecurityService;
+import com.jjneko.jjnet.networking.stun.StunClient;
 import com.jjneko.jjnet.networking.stun.StunServer;
 import com.jjneko.jjnet.networking.udp.UDPService;
 import com.jjneko.jjnet.networking.upnp.UPnPService;
@@ -64,17 +69,30 @@ public class JJnet {
 	static PeerListBuilder plb = null;
 	static PeerListSender pls = null;
 	static Thread maintT;
+	static TObjectLongHashMap<String> unaccessibleIps = new TObjectLongHashMap<String>();
+	static String externalIpAddress = null;
+	
+	public static void init(String seedAddress, int seedPort, ConnectionType seedType, boolean useHttp, boolean useUdp,boolean useStun, boolean useUPnP, boolean useNATPnP, int HttpPort, int TcpPort){
+		JJnet.seedAddress=seedAddress;
+		JJnet.seedPort=seedPort;
+		JJnet.seedType=seedType;
+		
+		JJnet.HttpPort=HttpPort;
+		JJnet.TcpPort=TcpPort;
+		init(useHttp, useUdp, useStun, useUPnP, useNATPnP);
+	}
 	
 	public static void init(String seedAddress, int seedPort, ConnectionType seedType, boolean useHttp, boolean useUdp,boolean useStun, boolean useUPnP, boolean useNATPnP){
 		JJnet.seedAddress=seedAddress;
 		JJnet.seedPort=seedPort;
 		JJnet.seedType=seedType;
+		
 		init(useHttp, useUdp, useStun, useUPnP, useNATPnP);
 	}
 	
-	public static void initAsSeed(boolean useHttp, boolean useTcp, boolean useStun, boolean useUPnP, boolean useNATPnP, int HttpPort, int UdpPort){
+	public static void initAsSeed(boolean useHttp, boolean useTcp, boolean useStun, boolean useUPnP, boolean useNATPnP, int HttpPort, int TcpPort){
 		JJnet.HttpPort=HttpPort;
-		JJnet.TcpPort=UdpPort;
+		JJnet.TcpPort=TcpPort;
 		init(useHttp, useTcp, useStun, useUPnP, useNATPnP);
 		worldGroup = new WorldGroup(localEndPointAddress);
 		worldGroup.addMember(localEndPointAddress);
@@ -139,6 +157,10 @@ public class JJnet {
 		pipes.remove(pipe);
 	}
 	
+	public static void markUnaccessible(String ip){
+		unaccessibleIps.put(ip, currentTimeMillis());
+	}
+	
 	public static Long currentTimeMillis(){
 		//TODO Time sync protocol
 		return System.currentTimeMillis();
@@ -165,14 +187,12 @@ public class JJnet {
 
 	static void newPeerProtocol(Pipe p, byte[] msg){
 		try{
-			if(worldGroup.owner.equals(localEndPointAddress)){
-				String keystring = new String(Arrays.copyOfRange(msg, 1, msg.length), "ISO-8859-1");
-				PublicKey key = SecurityService.parsePublicKey(keystring);
-				EndPoint newPoint= new EndPoint(key);
-				if(!worldGroup.containsMember(newPoint)){
-					worldGroup.addMember(newPoint);
-					worldGroup.broadcast(msg);
-				}
+			String keystring = new String(Arrays.copyOfRange(msg, 1, msg.length), "ISO-8859-1");
+			PublicKey key = SecurityService.parsePublicKey(keystring);
+			EndPoint newPoint= new EndPoint(key);
+			if(!worldGroup.containsMember(newPoint)){
+				worldGroup.addMember(newPoint);
+				worldGroup.broadcast(msg);
 			}
 		}catch(Exception ex){
 			log.severe("NewPeerProtocol failed: "+ ex.getStackTrace());
@@ -227,12 +247,7 @@ public class JJnet {
 	
 	public static String getLocalIp(){
 		//TODO internet facing ip
-		try {
-			return InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
-		return "";
+		return externalIpAddress;
 	}
 
 
@@ -299,6 +314,10 @@ public class JJnet {
 				
 				fetchWorldPeerList();
 				
+				try{
+					Thread.sleep(1000);
+				}catch(Exception ex){}
+				
 				byte[] pubkey=null;
 				try {
 					pubkey = SecurityService.publicKeytoString(localEndPointAddress.getKey()).getBytes("ISO-8859-1");
@@ -315,9 +334,21 @@ public class JJnet {
 			
 			
 			try {
-				//TODO change to actual internet facing ip and real tcp port
-				NodeAdvertisement ad = new NodeAdvertisement(InetAddress.getLocalHost().getHostAddress(), useHttp, useTcp, useStun, useHttp? https.getServerPort() : 0, useTcp? 0 : 0 , useStun? stuns.stunServerPort : 0);
+				InetSocketAddress stunAddr = new InetSocketAddress(seedAddress, 3478);
+				DatagramSocket dsock = new DatagramSocket();
+				
+				StunClient stcl = new StunClient(stunAddr, dsock);
+				
+				InetSocketAddress localAddr = stcl.getMappedAddress();
+				
+				System.out.println(localAddr);
+				externalIpAddress = localAddr.getAddress().getHostAddress();
+				
+				//TODO change to real tcp port
+				NodeAdvertisement ad = new NodeAdvertisement(localAddr.getAddress().getHostAddress(), useHttp, useTcp, useStun, useHttp? https.getServerPort() : 0, useTcp? 0 : 0 , useStun? stuns.stunServerPort : 0);
 				getAdvertisementService().publish(ad);
+				
+				dsock.close();
 			}catch(Exception ex){
 				ex.printStackTrace();
 			}
@@ -489,7 +520,7 @@ public class JJnet {
 				i.advance();
 				Pipe p = i.key();
 				if(!pipes.contains(p)){
-					recepients.remove(p);
+					i.remove();
 					recepientsTokens.remove(p);
 				}
 			}
@@ -504,22 +535,36 @@ public class JJnet {
 			
 			@Override
 			public void run() {
+				byte[] key = null;
+				byte[] msg = null;
+				
+				try{
+					key = (SecurityService.publicKeytoString(localEndPointAddress.getKey())).getBytes("ISO-8859-1");
+					msg = new byte[key.length+2];
+					msg[0] = Protocol.PLRRP.value();
+					msg[1] = PLB_KEY;
+					System.arraycopy(key, 0, msg, 2, key.length);
+					p.send(msg);
+				}catch(Exception ex){
+					ex.printStackTrace();
+				}
+				
 				for(int i=0;i<listLength;i++){
 					if(recepients.get(p)==PLB_STOP)
 						break;
-					try{
-						byte[] key = (SecurityService.publicKeytoString(list[i].getKey())).getBytes("ISO-8859-1");
-						byte[] msg = new byte[key.length+2];
-						msg[0] = Protocol.PLRRP.value();
-						msg[1] = PLB_KEY;
-						System.arraycopy(key, 0, msg, 2, key.length);
-						p.send(msg);
-					}catch(Exception ex){
-						ex.printStackTrace();
-					}
+					if(!list[i].equals(localEndPointAddress))
+						try{
+							key = (SecurityService.publicKeytoString(list[i].getKey())).getBytes("ISO-8859-1");
+							msg[0] = Protocol.PLRRP.value();
+							msg[1] = PLB_KEY;
+							System.arraycopy(key, 0, msg, 2, key.length);
+							p.send(msg);
+						}catch(Exception ex){
+							ex.printStackTrace();
+						}
 				}
 				
-				byte[] msg = new byte[2];
+				msg = new byte[2];
 				msg[0] = Protocol.PLRRP.value();
 				msg[1] = PLB_END;
 				p.send(msg);
@@ -547,6 +592,9 @@ public class JJnet {
 					if(pipes.size()<minNeighbours){
 						for(Advertisement ad : JJnet.getAdvertisementService().fetchLocal(NodeAdvertisement.class, minNeighbours-pipes.size())){
 							NodeAdvertisement nad = (NodeAdvertisement) ad;
+							if(unaccessibleIps.contains(nad.ipAddress)){
+								continue;
+							}
 							if(nad.http){
 								boolean alreadyConnected=false;
 								if(nad.ipAddress.equals(getLocalIp())){

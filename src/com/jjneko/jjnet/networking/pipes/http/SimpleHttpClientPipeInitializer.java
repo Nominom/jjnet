@@ -123,7 +123,7 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
             			pipe.setConnected(false);
             			pipe.close();
             			System.out.println("No response received in time");
-            			return;
+            			throw new Exception("Could not connect. No JJnet response recived");
             		}
             	}catch(Exception ex){}
             }
@@ -136,6 +136,7 @@ public class SimpleHttpClientPipeInitializer implements Runnable{
     		JJnet.addPipe(pipe);
 		}catch(Exception ex){
 			ex.printStackTrace();
+			JJnet.markUnaccessible(address.getHostAddress());
 		}
 	
 		

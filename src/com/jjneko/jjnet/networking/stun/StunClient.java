@@ -62,7 +62,7 @@ public class StunClient extends Thread {
 	private boolean done;
 
 	/*
-	 * Communicate with the stunServer using TCP
+	 * Communicate with the stunServer using UDP
 	 */
 	public StunClient(InetSocketAddress stunServer,
 			DatagramSocket datagramSocket) throws IOException {

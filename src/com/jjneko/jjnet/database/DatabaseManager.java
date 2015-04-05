@@ -32,7 +32,7 @@ public class DatabaseManager {
 		try {
 			String databaseName;
 			/* TODO remove the random!!!*/
-			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb"+(int)(Math.random()*20.0));
+			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb"+(int)(Math.random()*200.0));
 //			databaseName = System.getProperty("jjneko.jjnet.db.dbname", "jjnetdb");
 			JdbcDataSource ds = new JdbcDataSource();
 			ds.setURL("jdbc:h2:./"+databaseName);

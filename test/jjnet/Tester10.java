@@ -1,18 +1,10 @@
 package jjnet;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
 import java.util.Scanner;
-
-import org.ice4j.pseudotcp.PseudoTcpSocket;
-import org.ice4j.pseudotcp.PseudoTcpSocketFactory;
 
 import com.jjneko.jjnet.networking.stun.StunClient;
 
@@ -20,9 +12,7 @@ public class Tester10 {
 	
 	public static void main(String[] args){
 		try {
-			final DatagramSocket socket1 = new DatagramSocket(2888);
-			DatagramSocket socket2 = new DatagramSocket(2889);
-			
+			final DatagramSocket socket1 = new DatagramSocket(3333);			
 			
 			InetSocketAddress inet1 = new InetSocketAddress("stun.l.google.com", 19302);
 			InetSocketAddress inet2 = new InetSocketAddress("stun1.l.google.com", 19302);
@@ -78,65 +68,9 @@ public class Tester10 {
 			}
 			
 			socket1.setSoTimeout(0);
-			final PseudoTcpSocket psocket = new PseudoTcpSocketFactory().createSocket(socket1);
 			
-			psocket.connect(receiver);
-//			psocket.accept(10000);
-			
-			new Thread(new Runnable(){
 
-				@Override
-				public void run() {
-					InputStream istream;
-					try {
-						istream = psocket.getInputStream();
-					
-						ByteBuffer mlength = ByteBuffer.allocate(4);
-						while(true){
-							try {
-								istream.read(mlength.array());
-								
-								mlength.rewind();
-								int len = mlength.getInt();
-								
-								byte[] msg = new byte[len];
-								
-								for(int i=0;i<len;i++){
-									msg[i]=(byte) istream.read();
-								}
-								
-								System.out.println("received packet! :"+ new String(msg));
-							} catch (IOException e) {
-								e.printStackTrace();
-							}
-						}
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-				}}).start();
-			
-			try{
-				OutputStream ostream = psocket.getOutputStream();
-				ByteBuffer mlength = ByteBuffer.allocate(4);
-	
-				for(int i=0;i<200000;i++){
-					byte[] data = ("keepalive"+i).getBytes();
-					int len = data.length;
-					mlength.clear();
-					mlength.putInt(len);
-					
-					ostream.write(mlength.array());
-					ostream.write(data);
-					ostream.flush();
-					try{
-						Thread.sleep(20000);
-					}catch(Exception ex){};
-				}
-			}catch(Exception ex){
-				
-			}
 			socket1.close();
-			socket2.close();
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

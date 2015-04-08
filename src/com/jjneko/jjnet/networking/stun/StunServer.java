@@ -73,14 +73,8 @@ public class StunServer {
 			try {
 				socket = new DatagramSocket(stunServerPort);
 			} catch (SocketException e) {
-				logger.warning("Stun server port was already in use. Trying again with a new port.");
-				try{
-					socket = new DatagramSocket();
-					this.stunServerPort=socket.getLocalPort();
-				}catch(SocketException ex){
-					throw new IOException("Can't create DatagramSocket:  "
-							+ ex.getMessage());
-				}
+				logger.warning("Stun server port was already in use. No need to open a new server");
+				return;
 			}
 
 			this.stunServerPort = stunServerPort;

@@ -8,23 +8,25 @@ import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Scanner;
 
+import org.ice4j.pseudotcp.PseudoTcpSocket;
+import org.ice4j.pseudotcp.PseudoTcpSocketFactory;
+
 import com.jjneko.jjnet.networking.stun.StunClient;
 
 public class Tester10 {
 	
 	public static void main(String[] args){
 		try {
-			final DatagramSocket socket1 = new DatagramSocket();
-			DatagramSocket socket2 = new DatagramSocket();
+			final DatagramSocket socket1 = new DatagramSocket(2888);
+			DatagramSocket socket2 = new DatagramSocket(2889);
 			
 			
-			InetSocketAddress inet1 = new InetSocketAddress("stun.stunprotocol.org", 3478);
-			InetSocketAddress inet2 = new InetSocketAddress("stun.l.google.com", 19302);
+			InetSocketAddress inet1 = new InetSocketAddress("stun.l.google.com", 19302);
+			InetSocketAddress inet2 = new InetSocketAddress("stun1.l.google.com", 19302);
 			
 			StunClient stcl1 = new StunClient(inet1, socket1);
-			StunClient stcl2 = new StunClient(inet2, socket1);
-			
 			InetSocketAddress out1 = stcl1.getMappedAddress();
+			StunClient stcl2 = new StunClient(inet2, socket1);
 			InetSocketAddress out2 = stcl2.getMappedAddress();
 			
 			System.out.println(out1);
@@ -44,26 +46,40 @@ public class Tester10 {
 			DatagramPacket pack = new DatagramPacket(new byte[1024], 1024);
 			InetSocketAddress receiver = new InetSocketAddress(ip,port);
 			socket1.setSoTimeout(1000);
+			boolean accept=true;
+			
 			while(!connected){
 				try{
 					pack = new DatagramPacket(new byte[1024], 1024);
 					socket1.receive(pack);
 					System.out.println("received packet! :"+ new String(pack.getData()));
+					receiver=(InetSocketAddress) pack.getSocketAddress();
 					connected=true;
 					System.out.println("connected!");
-					throw new SocketTimeoutException();
+					
+					pack.setData("Hello".getBytes());
+					pack.setLength(5);
+					pack.setSocketAddress(receiver);
+					socket1.send(pack);
+					System.out.println("sent hello!");
 				}catch(SocketTimeoutException ex){
 					pack.setData("Hello".getBytes());
 					pack.setLength(5);
 					pack.setSocketAddress(receiver);
 					socket1.send(pack);
 					System.out.println("sent hello!");
+					accept=false;
 				}catch(Exception ex){
 					ex.printStackTrace();
 				}
 			}
 			
 			socket1.setSoTimeout(0);
+			PseudoTcpSocket psocket = new PseudoTcpSocketFactory().createSocket(socket1);
+			if(!accept)
+				psocket.connect(receiver);
+			else
+				psocket.accept(10000);
 			
 			new Thread(new Runnable(){
 

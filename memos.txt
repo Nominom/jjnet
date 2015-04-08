@@ -2,6 +2,7 @@ STUN
 http://www.h-online.com/security/features/How-Skype-Co-get-round-firewalls-747314.html
 https://books.google.co.uk/books?id=_PdIV2MMwQAC&pg=PA99&lpg=PA99&dq=JXTA+get+direct+UDP+connection&source=bl&ots=1qHoS5t5VX&sig=Bm2Yut06NImOiIqp136MctNFyyM&hl=fi&sa=X&ei=J8bUVOjcGuXD7gajoIEw&ved=0CCcQ6AEwAQ#v=onepage&q=JXTA%20get%20direct%20UDP%20connection&f=false
 http://stackoverflow.com/questions/21501359/p2p-message-transfer-behind-firewalls-and-nat
+https://www.zerotier.com/blog/?p=226
 http://en.wikipedia.org/wiki/UDP_hole_punching
 http://jstun.javawi.de/
 

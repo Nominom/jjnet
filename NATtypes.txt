@@ -1,0 +1,25 @@
+Different NAT types
+
+local: 2888
+
+1. outgoing
+	a. public1:2888 public2:2888
+	b. public1:?2888 public2:?2888 // NAT tries to add a predictable number to the port to bind to ephemeral ports IE. 2888 > 32888
+	c. public1:????? public2:????? // random port but same for new connection
+	d. public1:????? public2:?????+1 // counter that adds 1
+	e. public1:????? public2:?????-1 // counter that subtracts 1
+	f. public1:????? public2:?????+? // counter that adds some number
+	g. public1:????? public2:!????? // different port for every new connection
+	h. No UDP allowed
+
+2. incoming
+	1. any ip, any port
+	2. restricted ip, any port
+	3. restricted ip, restricted port
+	
+	
+
+Pairs that can't easily connect with eachother
+
+	g3 - g3
+	g? - ?3

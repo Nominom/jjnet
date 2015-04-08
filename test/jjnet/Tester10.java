@@ -1,11 +1,14 @@
 package jjnet;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
 import java.util.Scanner;
 
 import org.ice4j.pseudotcp.PseudoTcpSocket;
@@ -75,37 +78,63 @@ public class Tester10 {
 			}
 			
 			socket1.setSoTimeout(0);
-			PseudoTcpSocket psocket = new PseudoTcpSocketFactory().createSocket(socket1);
-			if(!accept)
-				psocket.connect(receiver);
-			else
-				psocket.accept(10000);
+			final PseudoTcpSocket psocket = new PseudoTcpSocketFactory().createSocket(socket1);
+			
+			psocket.connect(receiver);
+//			psocket.accept(10000);
 			
 			new Thread(new Runnable(){
 
 				@Override
 				public void run() {
-					DatagramPacket packs = new DatagramPacket(new byte[1024], 1024);
-					while(true){
-						try {
-							socket1.receive(packs);
-							System.out.println("received packet! :"+ new String(packs.getData()));
-						} catch (IOException e) {
-							e.printStackTrace();
+					InputStream istream;
+					try {
+						istream = psocket.getInputStream();
+					
+						ByteBuffer mlength = ByteBuffer.allocate(4);
+						while(true){
+							try {
+								istream.read(mlength.array());
+								
+								mlength.rewind();
+								int len = mlength.getInt();
+								
+								byte[] msg = new byte[len];
+								
+								for(int i=0;i<len;i++){
+									msg[i]=(byte) istream.read();
+								}
+								
+								System.out.println("received packet! :"+ new String(msg));
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
+					} catch (IOException e1) {
+						e1.printStackTrace();
 					}
 				}}).start();
 			
-			for(int i=0;i<200000;i++){
-				pack.setData("keepalive".getBytes());
-				pack.setLength("keepalive".getBytes().length);
-				pack.setSocketAddress(receiver);
-				socket1.send(pack);
-				try{
-					Thread.sleep(20000);
-				}catch(Exception ex){};
+			try{
+				OutputStream ostream = psocket.getOutputStream();
+				ByteBuffer mlength = ByteBuffer.allocate(4);
+	
+				for(int i=0;i<200000;i++){
+					byte[] data = ("keepalive"+i).getBytes();
+					int len = data.length;
+					mlength.clear();
+					mlength.putInt(len);
+					
+					ostream.write(mlength.array());
+					ostream.write(data);
+					ostream.flush();
+					try{
+						Thread.sleep(20000);
+					}catch(Exception ex){};
+				}
+			}catch(Exception ex){
+				
 			}
-			
 			socket1.close();
 			socket2.close();
 		} catch (Exception e) {

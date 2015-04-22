@@ -52,7 +52,7 @@ public class ReliableDatagramSocket {
 	int packets_this_window=0;
 	long window_length=100;
 	float window_size=5;
-	int window_min_size=5;
+	int window_min_size=1;
 	float window_increase_rate=0.1f;
 	float window_decrease_rate=0.5f;
 	int window_small_decrease_rate=3;
@@ -82,6 +82,11 @@ public class ReliableDatagramSocket {
 		packets_this_window++;
 		
 		System.out.println("window_size= "+window_size);
+		if(resendList.size()>maxbit/8){
+			System.out.println("resendList super large! reducing window");
+			decreaseWindow();
+		}
+			
 
 		if(shouldResend.get(maxbit-1) && !sendAcked.get(maxbit-1)){
 			int seq = JJNetUtils.floorMod(sendSeq-(maxbit-1),MAX_SEQ+1);

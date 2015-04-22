@@ -58,7 +58,7 @@ public abstract class PeerGroup {
 //		                           SecurityService.PACKET_ID_LENGTH+//Packet id
 //		                           EndPoint.ENDPOINT_ADDRESS_LENGTH+//Source addr
 //		                           Long.BYTES+						//timestamp
-//		                           4+								//Message length as int
+//		                           4+								//Message _length as int
 //		                           bcastbody.length+				//Message
 //		                           SecurityService.CIPHER_LENGTH	//Signed hash of everything else
 //		                           ];

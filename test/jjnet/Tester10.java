@@ -7,6 +7,7 @@ import java.net.SocketTimeoutException;
 import java.util.Scanner;
 
 import com.jjneko.jjnet.networking.stun.StunClient;
+import com.jjneko.jjnet.utils.JJNetUtils;
 
 public class Tester10 {
 	
@@ -69,8 +70,67 @@ public class Tester10 {
 			
 			socket1.setSoTimeout(0);
 			
+			
+			final ReliableDatagramSocket rsocket = new ReliableDatagramSocket(socket1,receiver);
+			
+			
 
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					while(true){
+						try{
+							rsocket.send("Keepalive".getBytes(), true);
+							Thread.sleep(10000);
+						} catch (Exception e) {
+							e.printStackTrace();
+							System.exit(0);
+						}
+					}
+				}
+			}).start();
+			
+			new Thread(new Runnable() {
+
+				@Override
+				public void run() {
+					ReliableDatagramPacket packet = new ReliableDatagramPacket();
+					while(true){
+						try {
+							rsocket.receive(packet);
+							System.out.println(packet.toString());
+							System.out.println(new String(packet.getData()));
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}).start();
+			
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					while(true){
+						try {
+							rsocket.checkResend();
+							Thread.sleep(500);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				}
+			}).start();
+			String msg = "";
+			
+			while(!msg.equals("exit")){
+				msg=s.nextLine();
+				rsocket.send(msg.getBytes());
+			}
+			
+			s.close();
 			socket1.close();
+			System.exit(0);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

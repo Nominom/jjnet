@@ -217,7 +217,7 @@ public class StunServer {
 
 		logger.warning("Got UDP Stun request on socket "
 				+ socket.getLocalAddress() + ":" + socket.getLocalPort()
-				+ " length " + length + " bytes " + " from " + isa);
+				+ " _length " + length + " bytes " + " from " + isa);
 
 		byte[] response = getStunResponse(isa, request, length);
 
@@ -330,7 +330,7 @@ public class StunServer {
 
 		response[StunHeader.STUN_HEADER_LENGTH + 1] = StunHeader.MAPPED_ADDRESS; // type
 
-		response[StunHeader.STUN_HEADER_LENGTH + 3] = StunHeader.MAPPED_ADDRESS_LENGTH; // length
+		response[StunHeader.STUN_HEADER_LENGTH + 3] = StunHeader.MAPPED_ADDRESS_LENGTH; // _length
 
 		response[StunHeader.STUN_HEADER_LENGTH + 5] = 1; // address family
 

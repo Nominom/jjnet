@@ -88,7 +88,7 @@ class MessageHandler implements Runnable {
 //							                           SecurityService.PACKET_ID_LENGTH+//Packet id
 //							                           EndPoint.ENDPOINT_ADDRESS_LENGTH+//Source addr
 //							                           Long.BYTES+						//timestamp
-//							                           Integer.BYTES+					//Message length as int
+//							                           Integer.BYTES+					//Message _length as int
 //							                           msg.length+						//Message
 //							                           SecurityService.CIPHER_LENGTH	//Signed hash of everything else
 //							                           ];

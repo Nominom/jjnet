@@ -279,7 +279,7 @@ public class StunClient extends Thread {
 				return;
 			}
 
-			logger.fine("BAD STUN response, length " + length);
+			logger.fine("BAD STUN response, _length " + length);
 		}
 
 		throw new SocketTimeoutException("BAD STUN RESPONSE");

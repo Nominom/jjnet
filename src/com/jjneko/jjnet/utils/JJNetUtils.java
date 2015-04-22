@@ -153,4 +153,8 @@ public class JJNetUtils {
 		decompressor.decompress(compressed, 4+offset, restored, 0, decompressedLength);
 		return restored;	
 	}
+	
+	public static int floorMod(int a, int b){
+		return (a % b + b) % b;
+	}
 }

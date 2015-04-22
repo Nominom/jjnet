@@ -199,6 +199,18 @@ public class SecurityService {
 		return Base64.encodeBase64String(hash).substring(0, length);
 	}
 	
+	public static String hashAsBase64(byte[] data) {
+		Blakehasher.update(data);
+		byte[] hash = Blakehasher.digest();
+		return Base64.encodeBase64String(hash);
+	}
+
+	public static String hashAsBase64(byte[] data, int length) {
+		Blakehasher.update(data);
+		byte[] hash = Blakehasher.digest();
+		return Base64.encodeBase64String(hash).substring(0, length);
+	}
+	
 	public static String hashAsHex(String data) {
 		Blakehasher.update(data.getBytes());
 		byte[] hash = Blakehasher.digest();
@@ -357,8 +369,8 @@ public class SecurityService {
 	
 	
 	/**
-	 * Encrypts a byte array with a random IV <br/>
-	 * Make sure the the dest array has a length of at least src.length+16!
+	 * Encrypts a byte _array with a random IV <br/>
+	 * Make sure the the dest _array has a _length of at least src.length+16!
 	 * 
 	 * @param key
 	 * @param src
@@ -388,14 +400,14 @@ public class SecurityService {
 	
 	
 	/**
-	 * Decrypts a byte array with IV appended to the message first 16 bytes
+	 * Decrypts a byte _array with IV appended to the message first 16 bytes
 	 * 
 	 * @param key
 	 * @param src
 	 * @param srcOff
 	 * @param dest
 	 * @param destOff
-	 * @param length
+	 * @param _length
 	 * @throws Exception
 	 */
 	public static void aesDecrypt(Key key, byte[] src, int srcOff, byte[] dest, int destOff, int length) throws Exception{
@@ -441,7 +453,7 @@ public class SecurityService {
 	
 	public static Key generateAESXORKey(byte[] key1, byte[] key2)throws SecurityException{
 		if(key1.length != key2.length){
-			throw new SecurityException("Key1 length does not match Key2");
+			throw new SecurityException("Key1 _length does not match Key2");
 		}
 		
 		byte[] keyBytes = new byte[key1.length];

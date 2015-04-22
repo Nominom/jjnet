@@ -13,7 +13,7 @@ public class Tester10 {
 	
 	public static void main(String[] args){
 		try {
-			final DatagramSocket socket1 = new DatagramSocket(3333);			
+			final DatagramSocket socket1 = new DatagramSocket();			
 			
 			InetSocketAddress inet1 = new InetSocketAddress("stun.l.google.com", 19302);
 			InetSocketAddress inet2 = new InetSocketAddress("stun1.l.google.com", 19302);
@@ -82,7 +82,7 @@ public class Tester10 {
 					while(true){
 						try{
 							rsocket.send("Keepalive".getBytes(), true);
-							Thread.sleep(10000);
+							Thread.sleep(60000);
 						} catch (Exception e) {
 							e.printStackTrace();
 							System.exit(0);
@@ -125,6 +125,24 @@ public class Tester10 {
 			
 			while(!msg.equals("exit")){
 				msg=s.nextLine();
+				if(msg.equals("start")){
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							
+							long beforeTime=System.nanoTime();
+							for(int i=0;i<100000;i++){
+								try{
+									rsocket.send(JJNetUtils.intToByteArray(i), true);
+								} catch (Exception e) {
+									e.printStackTrace();
+									System.exit(0);
+								}
+							}
+							System.out.println("send took "+(double)((System.nanoTime()-beforeTime)/1000000.0f)+"ms");
+						}
+					}).start();
+				}
 				rsocket.send(msg.getBytes());
 			}
 			

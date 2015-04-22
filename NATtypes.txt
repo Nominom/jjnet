@@ -2,6 +2,8 @@ Different NAT types
 
 local: 2888
 
+Sometimes a NAT might block an ip if it tries to initiate the connection (Needs testing)
+
 1. outgoing
 	a. public1:2888 public2:2888
 	b. public1:?2888 public2:?2888 // NAT tries to add a predictable number to the port to bind to ephemeral ports IE. 2888 > 32888

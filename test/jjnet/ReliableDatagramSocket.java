@@ -3,6 +3,7 @@ package jjnet;
 import static jjnet.ReliableDatagramPacketHeader.*;
 import gnu.trove.iterator.TIntObjectIterator;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TIntProcedure;
 import gnu.trove.set.hash.TIntHashSet;
 
 import java.io.IOException;
@@ -37,7 +38,7 @@ public class ReliableDatagramSocket {
 	private int recTimes=0;
 	private int sendTimes=0;
 
-	static final long DEFAULT_RESEND_TIMEOUT=1200;
+	static final long DEFAULT_RESEND_TIMEOUT=300;
 	long resendTimeout=DEFAULT_RESEND_TIMEOUT;
 	/** For synchronized keyword */
 	Object sendLock = new Object();
@@ -52,7 +53,7 @@ public class ReliableDatagramSocket {
 	long window_length=100;
 	float window_size=5;
 	int window_min_size=5;
-	float window_increase_rate=0.5f;
+	float window_increase_rate=0.1f;
 	float window_decrease_rate=0.5f;
 	int window_small_decrease_rate=3;
 	
@@ -63,7 +64,6 @@ public class ReliableDatagramSocket {
 		BitSet ack = new BitSet(ACK_BYTES*8);
 		byte[] msg = new byte[HEADER_LENGTH+message.length];
 		DatagramPacket packet = new DatagramPacket(msg,msg.length);
-		
 		
 		if(packets_this_window>=window_size){
 			long sleepTime=last_window+window_length-JJnet.currentTimeMillis();
@@ -83,15 +83,25 @@ public class ReliableDatagramSocket {
 		
 		System.out.println("window_size= "+window_size);
 
-		synchronized (sendLock) {
-//			synchronized (sendLock) {
-				while(shouldResend.get(maxbit-1) && !sendAcked.get(maxbit-1))
-					try {sendLock.wait(1000);
-					} catch (InterruptedException e) {e.printStackTrace();}
-//			}
-				
-				
+		if(shouldResend.get(maxbit-1) && !sendAcked.get(maxbit-1)){
+			int seq = JJNetUtils.floorMod(sendSeq-(maxbit-1),MAX_SEQ+1);
+			System.out.println(seq);
+			synchronized(resendList){
+				synchronized(sentData){
+					try{
+					byte[] dat = sentData.get(seq).data;
+					resendList.add(dat);
+					sentData.remove(seq);
+					}catch(NullPointerException ex){}
+				}
+			}
+			shouldResend.set(maxbit-1, false);
+			sendAcked.set(maxbit-1, true);
+			System.out.println("overflow! decreasing window");
+			decreaseWindow();
+		}
 		
+		synchronized (sendLock) {
 			for(int i=0;i<ACK_BYTES*8;i++){
 				ack.set(i, received.get(i));;
 			}
@@ -450,6 +460,7 @@ public class ReliableDatagramSocket {
 		int hop = Math.abs(sendSeq-seq);
 		if(hop>(MAX_SEQ/2)){
 			hop = (MAX_SEQ)-seq+sendSeq+1;
+			
 		}
 
 		if(hop<maxbit){
@@ -509,9 +520,6 @@ public class ReliableDatagramSocket {
 			}
 		}
 		
-		synchronized(sendLock){
-			sendLock.notifyAll();
-		}
 	}
 	
 	

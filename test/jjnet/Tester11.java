@@ -15,7 +15,11 @@ public class Tester11 {
 		final ReliableDatagramSocket2 so2 = new ReliableDatagramSocket2(new DatagramSocket(2223), new InetSocketAddress("127.0.0.1",2222));
 		
 		final TIntHashSet received=new TIntHashSet();
+		
+		
 		new Thread(new Runnable() {
+			
+			
 
 			@Override
 			public void run() {

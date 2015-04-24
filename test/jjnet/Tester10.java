@@ -6,6 +6,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketTimeoutException;
 import java.util.Scanner;
 
+import org.apache.commons.lang3.RandomUtils;
+
 import com.jjneko.jjnet.networking.stun.StunClient;
 import com.jjneko.jjnet.utils.JJNetUtils;
 
@@ -81,8 +83,9 @@ public class Tester10 {
 				public void run() {
 					while(true){
 						try{
-							rsocket.send("Keepalive".getBytes(), true);
-							Thread.sleep(30000);
+							System.out.println("window size= "+rsocket.window_size);
+							System.out.println(rsocket.sendAcked);
+							Thread.sleep(5000);
 						} catch (Exception e) {
 							e.printStackTrace();
 							System.exit(0);
@@ -100,7 +103,7 @@ public class Tester10 {
 						try {
 							rsocket.receive(packet);
 							System.out.println(packet.toString());
-							System.out.println(new String(packet.getData()));
+//							System.out.println(new String(packet.getData()));
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
@@ -120,9 +123,9 @@ public class Tester10 {
 						public void run() {
 							
 							long beforeTime=System.nanoTime();
-							for(int i=0;i<100000;i++){
+							for(int i=0;i<10000;i++){
 								try{
-									rsocket.send(JJNetUtils.intToByteArray(i), true);
+									rsocket.send(RandomUtils.nextBytes(512), true);
 								} catch (Exception e) {
 									e.printStackTrace();
 									System.exit(0);

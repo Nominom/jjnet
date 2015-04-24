@@ -71,7 +71,7 @@ public class Tester10 {
 			socket1.setSoTimeout(0);
 			
 			
-			final ReliableDatagramSocket rsocket = new ReliableDatagramSocket(socket1,receiver);
+			final ReliableDatagramSocket2 rsocket = new ReliableDatagramSocket2(socket1,receiver);
 			
 			
 
@@ -82,7 +82,7 @@ public class Tester10 {
 					while(true){
 						try{
 							rsocket.send("Keepalive".getBytes(), true);
-							Thread.sleep(60000);
+							Thread.sleep(30000);
 						} catch (Exception e) {
 							e.printStackTrace();
 							System.exit(0);
@@ -107,24 +107,13 @@ public class Tester10 {
 					}
 				}
 			}).start();
+
 			
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					while(true){
-						try {
-							rsocket.checkResend();
-							Thread.sleep(500);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-				}
-			}).start();
+			
 			String msg = "";
+			msg=s.nextLine();
 			
 			while(!msg.equals("exit")){
-				msg=s.nextLine();
 				if(msg.equals("start")){
 					new Thread(new Runnable() {
 						@Override
@@ -144,6 +133,7 @@ public class Tester10 {
 					}).start();
 				}
 				rsocket.send(msg.getBytes());
+				msg=s.nextLine();
 			}
 			
 			s.close();

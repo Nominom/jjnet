@@ -12,7 +12,7 @@ public class ReliableDatagramPacketHeader {
 	
 	public static final int MAX_SEQ=65535;
 	
-	public static final int ACK_BYTES=5;
+	public static final int ACK_BYTES=4;
 	/** 
 	 * seq + flags + ackSeq + ack
 	 * */
@@ -36,6 +36,12 @@ public class ReliableDatagramPacketHeader {
 	 * Flag for if this is only an acknowledgement packet and should be discarded
 	 * */
 	static final int FLAG_ACK=2;
+	/** 
+	 *    v    <br>
+	 * 00010000<br>
+	 * Flag for if this packet would be resent if it was lost
+	 * */
+	static final int FLAG_RELIABLE=3;
 	/** 
 	 *        v<br>
 	 * 00000001<br>
@@ -187,6 +193,10 @@ public class ReliableDatagramPacketHeader {
 	
 	public boolean isAck() {
 		return flags[FLAG_ACK];
+	}
+	
+	public boolean isReliable() {
+		return flags[FLAG_RELIABLE];
 	}
 	
 	public int getSeq(){

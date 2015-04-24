@@ -24,7 +24,7 @@ public class ReliableDatagramSocket {
 	
 	TIntObjectHashMap<DataTimePair> sentData = new TIntObjectHashMap<DataTimePair>();
 	
-	private static final int maxbit = 2048;
+	private static final int maxbit = 512;
 	BitBuffer sendAcked = new BitBuffer(maxbit);
 	BitBuffer shouldResend = new BitBuffer(maxbit);
 	BitBuffer received = new BitBuffer(maxbit);

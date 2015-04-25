@@ -24,6 +24,7 @@ import org.apache.derby.tools.sysinfo;
 import com.jjneko.jjnet.networking.JJnet;
 import com.jjneko.jjnet.utils.BitBuffer;
 import com.jjneko.jjnet.utils.JJNetUtils;
+import com.jjneko.jjnet.utils.OffsetBitBuffer;
 
 public class ReliableDatagramSocket2 {
 	
@@ -32,10 +33,10 @@ public class ReliableDatagramSocket2 {
 	
 	long keepAliveInterval=30000;
 	
-	private static final int maxbit = 1024;
-	BitBuffer sendAcked = new BitBuffer(maxbit);
-	BitBuffer shouldResend = new BitBuffer(maxbit);
-	BitBuffer received = new BitBuffer(maxbit);
+	private static final int maxbit = 8192;
+	BitBuffer sendAcked = new OffsetBitBuffer(maxbit);
+	BitBuffer shouldResend = new OffsetBitBuffer(maxbit);
+	BitBuffer received = new OffsetBitBuffer(maxbit);
 	
 	
 	float resendQueueMaxPercentage=0.8f;
@@ -53,12 +54,12 @@ public class ReliableDatagramSocket2 {
 	
 	boolean active=false;
 	
-	static final long DEFAULT_RESEND_TIMEOUT=1000;
+	static final long DEFAULT_RESEND_TIMEOUT=400;
 	long resendTimeout=DEFAULT_RESEND_TIMEOUT;
 	
 	
 	long lastCheckResend=0;
-	ArrayList<Integer> removeList = new ArrayList<Integer>();
+	LinkedTransferQueue<Integer> removeList = new LinkedTransferQueue<Integer>();
 	
 	static final long NS_IN_MS = 1000000;
 	
@@ -67,11 +68,13 @@ public class ReliableDatagramSocket2 {
 	long window_length=200;
 	float window_size=10;
 	int window_min_size=1;
-	float window_increase_rate=0.1f;
+	float window_increase_rate=1f;
 	float window_decrease_rate=0.5f;
+	float congestionThreshHold=0.02f;
 	int window_small_decrease_rate=3;
 	long lastResendQueueNotice=0;
 	long lastWindowDecrease=0;
+	boolean slowStartPhase=true;
 	
 	Thread sendThread;
 	int sendThreadSendRepeatCount=1;
@@ -177,7 +180,8 @@ public class ReliableDatagramSocket2 {
 						}
 						if(sentThisWindow==0){
 							sleepTime=window_length;
-							_decreaseWindow();
+						}else{
+							_increaseWindow();
 						}						
 						sentThisWindow=0;
 						lastWindow=currTime;
@@ -190,6 +194,8 @@ public class ReliableDatagramSocket2 {
 						if(currTime-lastAckSent>keepAliveInterval){
 							_sendAck();
 						}
+						
+						
 					}
 					
 					//Sleep zZzZzZzZzZ
@@ -287,7 +293,7 @@ public class ReliableDatagramSocket2 {
 				for(int i=0;i<ACK_BYTES*8;i++){
 					boolean acked = packet.header.ack.get(i);
 					if(acked & ackHop+i<maxbit){
-						if(!sendAcked.get(ackHop+i)){
+						if(slowStartPhase && !sendAcked.get(ackHop+i) ){
 							_increaseWindow();
 						}
 						
@@ -295,8 +301,6 @@ public class ReliableDatagramSocket2 {
 						shouldResend.set(ackHop+i, false);
 						_clearDataPair(JJNetUtils.floorMod(ackSeq-i, MAX_SEQ+1));
 						
-					}else if( !acked & i == (ACK_BYTES*8)-2){
-						_sDecreaseWindow();
 					}
 				}
 				
@@ -335,7 +339,7 @@ public class ReliableDatagramSocket2 {
 		ReliableDatagramPacket pack = new ReliableDatagramPacket(address, data, shouldResend, false, false, false, false);
 		boolean success=false;
 		
-		if(sentData.size()>maxbit*resendQueueMaxPercentage && System.currentTimeMillis()-lastResendQueueNotice>resendTimeout*2){
+		if(sentData.size()>maxbit*resendQueueMaxPercentage && System.currentTimeMillis()-lastResendQueueNotice>resendTimeout){
 			_decreaseWindow();
 			System.out.println("resendQueue getting large! reducing window");
 			lastResendQueueNotice=System.currentTimeMillis();
@@ -376,11 +380,11 @@ public class ReliableDatagramSocket2 {
 			int seq = JJNetUtils.floorMod(sendSeq-(maxbit-1),MAX_SEQ+1);
 			byte[] dat=null;
 			
-			synchronized(sentData){
-				try{
-					dat = sentData.remove(seq).data;					
-				}catch(NullPointerException ex){}
-			}
+			try{
+				dat=sentData.get(seq).data;
+			}catch(NullPointerException ex){}
+			
+			removeList.put(seq);
 			
 			if(dat!=null){
 				ReliableDatagramPacket pack = new ReliableDatagramPacket(address, dat, true, true, false, false, false);
@@ -473,14 +477,15 @@ public class ReliableDatagramSocket2 {
 		}
 		
 		if(!removeList.isEmpty()){
-			_decreaseWindow();
-			System.out.println("Packet loss detected! reducing window");
+			if(removeList.size()>window_size*congestionThreshHold*(resendTimeout/window_size)){
+				_decreaseWindow();
+				System.out.println("Packet loss detected! reducing window");
+			}
 			synchronized(sentData){
-				for(int i : removeList){
-					sentData.remove(i);
+				while(!removeList.isEmpty()){
+					sentData.remove(removeList.remove());
 				}
 			}
-			removeList.clear();
 		}
 
 		
@@ -493,6 +498,8 @@ public class ReliableDatagramSocket2 {
 	void _decreaseWindow(){
 		if(System.currentTimeMillis()-lastWindowDecrease<resendTimeout/2)
 			return;
+		if(slowStartPhase)
+			slowStartPhase=false;
 		
 		window_size=(int)(window_size*window_decrease_rate);
 		if(window_size<window_min_size){
@@ -500,13 +507,6 @@ public class ReliableDatagramSocket2 {
 		}
 		
 		lastWindowDecrease=System.currentTimeMillis();
-	}
-	
-	void _sDecreaseWindow(){
-		window_size=window_size-window_small_decrease_rate;
-		if(window_size<window_min_size){
-			window_size=window_min_size;
-		}
 	}
 	
 	void _increaseWindow(){

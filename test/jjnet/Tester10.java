@@ -84,7 +84,7 @@ public class Tester10 {
 					while(true){
 						try{
 							System.out.println("window size= "+rsocket.window_size);
-							System.out.println(rsocket.sendAcked);
+//							System.out.println(rsocket.sendAcked);
 							Thread.sleep(5000);
 						} catch (Exception e) {
 							e.printStackTrace();
@@ -123,7 +123,7 @@ public class Tester10 {
 						public void run() {
 							
 							long beforeTime=System.nanoTime();
-							for(int i=0;i<10000;i++){
+							for(int i=0;i<100000;i++){
 								try{
 									rsocket.send(RandomUtils.nextBytes(512), true);
 								} catch (Exception e) {
